@@ -1,0 +1,17 @@
+.chessboard {
+    width: 600px;
+    height: 600px;
+    border-radius: 5px;
+    overflow: hidden;
+    display: grid;
+    grid-template-columns: repeat(8, 1fr);
+    grid-template-rows: repeat(8, 1fr);
+
+    .black-tile {
+        background: #769656;
+    }
+
+    .white-tile {
+        background: #eeeed2;
+    }
+}
