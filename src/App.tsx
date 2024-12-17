@@ -1,13 +1,11 @@
-import './App.css'
+import './App.css';
 
 import Chessboard from './components/Chessboard/Chessboard';
 
 function App() {
 
   return (
-    <div className='container'>
-      <Chessboard/>
-    </div>
+    <Chessboard/>
   )
 }
 
