@@ -12,14 +12,16 @@
     background: #eeeed2;
 }
 
-img {
-    display: none;
-    height: 70px;
-    width: 70px;
+.chess-piece {
+    width: 75px;
+    height: 75px;
+    background-repeat: no-repeat;
+    background-position: center;
+    background-size: 75px;
+    cursor: grab;
+    position: absolute;
 }
 
-img[src] {
-    display: block;
-    height: 70px;
-    width: 70px;
+.chess-piece:active {
+    cursor: grabbing;
 }
