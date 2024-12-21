@@ -1,0 +1,45 @@
+.player-bar {
+    position: absolute;
+    height: 60px;
+    width: 600px;
+    margin-top: 20px;
+    display: flex;
+    align-content: center;
+    justify-content: space-between;
+    border-radius: 5px;
+}
+
+.opponent-player-bar {
+    position: absolute;
+    height: 60px;
+    width: 600px;
+    margin-top: -80px;
+    display: flex;
+    align-content: center;
+    justify-content: space-between;
+    border-radius: 5px;
+}
+
+.user-info {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+    margin-left: 12px;
+}
+
+h2 {
+    font-size: medium;
+    font-family: Arial, Helvetica, sans-serif;
+    font-weight: 800;
+}
+
+img {
+    height: 50px;
+    width: 50px;
+    border-radius: 50%;
+    object-fit: cover;
+}
+
+.component-a .player-bar {
+    margin-top: -20px;
+}
