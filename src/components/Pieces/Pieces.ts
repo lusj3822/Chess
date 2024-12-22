@@ -15,27 +15,29 @@ export abstract class Piece {
         this.color = color;
     }
 
-    abstract isValidMove(prevX: number, prevY: number, currentX: number, currentY: number): boolean;
+    abstract isValidMove(prevX: number, prevY: number, currentX: number, currentY: number, boardState: Piece[]): boolean;
+
+    isTileEmpty(x:number, y: number, boardState: Piece[]): boolean {
+        const piece = boardState.find((p) => p.x === x && p.y === y);
+        console.log(piece === undefined);
+        return piece === undefined;
+    }
+
+    isTileOccupiedByEnemy(x: number, y: number, boardState: Piece[]): boolean {
+        const piece = boardState.find((p) => p.x === x && p.y === y);
+        if (this.color === ColorType.WHITE) {
+            return (piece != undefined) && piece.color === ColorType.BLACK;
+        }
+
+        if (this.color === ColorType.BLACK) {
+            return (piece != undefined) && piece.color === ColorType.WHITE;
+        }
+        return false;
+    }
 
     abstract toString(): string;
 
 }
-
-/*
-    isTileEmpty(x: number, y: number, boardState: Piece[]): boolean {
-        const piece = boardState.find((p) => p.x === x && p.y === y);
-        return piece === undefined;
-    }
-
-    tileHasEnemy(x: number, y: number, boardState: Piece[]) {
-        const piece = boardState.find((p) => p.x === x && p.y === y);
-        if ((piece != undefined) && piece.color === ColorType.BLACK) {
-            return true;
-        } else {
-            return false;
-        }
-    }
-*/
 
 export class Pawn extends Piece {
 
@@ -43,26 +45,52 @@ export class Pawn extends Piece {
         super(image, x, y, type, color);
     }
 
-    //console.log("WHITE");
-    //return prevY === 6 ? (prevY - currentY) <= 2 : (prevY - currentY) === 1;
-    isValidMove(prevX: number, prevY: number, currentX: number, currentY: number): boolean {
+    isValidVerticalMovement(prevX: number, prevY: number, currentX: number, currentY: number): boolean {
         if (this.color === ColorType.WHITE) {
             if (prevY === 6) {
-                if (prevX === currentX && (prevY - currentY === 1 || prevY - currentY === 2)) {
-                    return true;
-                }
+                return prevX === currentX && (prevY - currentY) <= 2;
             } else {
-                if (prevX === currentX && prevY - currentY === 1) {
-                    return true;
-                }
+                return prevX === currentX && (prevY - currentY) === 1;
             }
         }
 
         if (this.color === ColorType.BLACK) {
-            //console.log("BLACK");
-            return prevY === 1 ? (currentY - prevY) <= 2 : (currentY - prevY) === 1;
+            if (prevY === 1) {
+                return prevX === currentX && (currentY - prevY) <= 2;
+            } else {
+                return prevX === currentX && (currentY - prevY) === 1;
+            }
         }
         return false;
+    }
+
+    isValidDiagonalMovement(prevX: number, prevY: number, currentX: number, currentY: number, boardState: Piece[]): boolean {
+        if (this.color === ColorType.WHITE) {
+            if ((prevY - currentY) + (currentX - prevX) === 2) {
+                return this.isTileOccupiedByEnemy(currentX, currentY, boardState);
+            } 
+            if ((prevY - currentY) + (prevX - currentX) === 2) {
+                return this.isTileOccupiedByEnemy(currentX, currentY, boardState);
+            }
+        }
+
+        if (this.color === ColorType.BLACK) {
+            if ((currentY - prevY) + (currentX - prevX) === 2) {
+                return this.isTileOccupiedByEnemy(currentX, currentY, boardState);
+            } 
+            if ((currentY - prevY) + (prevX - currentX) === 2) {
+                return this.isTileOccupiedByEnemy(currentX, currentY, boardState);
+            }
+        }
+        return false;
+    }
+
+    isValidMove(prevX: number, prevY: number, currentX: number, currentY: number, boardState: Piece[]): boolean {
+        return ( 
+            this.isValidDiagonalMovement(prevX, prevY, currentX, currentY, boardState) ||
+            this.isValidVerticalMovement(prevX, prevY, currentX, currentY) && 
+            this.isTileEmpty(currentX, currentY, boardState)
+        );
     }
 
     toString(): string {
@@ -70,30 +98,13 @@ export class Pawn extends Piece {
     }
 }
 
-/*
-    if (this.color === ColorType.WHITE) {
-        console.log("WHITE");
-        if (prevY === 6) {
-            return ((prevY - currentY) <= 2);
-        } else {
-            return ((prevY - currentY) === 1);
-        }
-    }
-    console.log("BLACK");
-    if (prevY === 1) {
-        return ((currentY - prevY) <= 2);
-    } else {
-        return ((currentY - prevY) === 1);
-    }
-*/
-
 export class Rook extends Piece {
 
     constructor(image: string, x: number, y:number, type: PieceType, color: ColorType) {
         super(image, x, y, type, color);
     }
 
-    isValidMove(prevX: number, prevY: number, currentX: number, currentY: number): boolean {
+    isValidMove(prevX: number, prevY: number, currentX: number, currentY: number, boardState: Piece[]): boolean {
         return false;
     }
 
@@ -108,7 +119,7 @@ export class Knight extends Piece {
         super(image, x, y, type, color);
     }
 
-    isValidMove(prevX: number, prevY: number, currentX: number, currentY: number): boolean {
+    isValidMove(prevX: number, prevY: number, currentX: number, currentY: number, boardState: Piece[]): boolean {
         return false;
     }
 
@@ -123,7 +134,7 @@ export class Bishop extends Piece {
         super(image, x, y, type, color);
     }
 
-    isValidMove(prevX: number, prevY: number, currentX: number, currentY: number): boolean {
+    isValidMove(prevX: number, prevY: number, currentX: number, currentY: number, boardState: Piece[]): boolean {
         return false;
     }
 
@@ -138,7 +149,7 @@ export class Queen extends Piece {
         super(image, x, y, type, color);
     }
 
-    isValidMove(prevX: number, prevY: number, currentX: number, currentY: number): boolean {
+    isValidMove(prevX: number, prevY: number, currentX: number, currentY: number, boardState: Piece[]): boolean {
         return false;
     }
 
@@ -153,7 +164,7 @@ export class King extends Piece {
         super(image, x, y, type, color);
     }
 
-    isValidMove(prevX: number, prevY: number, currentX: number, currentY: number): boolean {
+    isValidMove(prevX: number, prevY: number, currentX: number, currentY: number, boardState: Piece[]): boolean {
         return false;
     }
 
