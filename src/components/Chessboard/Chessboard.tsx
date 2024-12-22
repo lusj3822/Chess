@@ -20,7 +20,6 @@ export enum ColorType {
 const initial_board_state: Piece[] = [];
 
 for (let i = 0; i < 8; i++) {
-    
     initial_board_state.push(new Pawn("/pieces/bp.png", i, 1, PieceType.PAWN, ColorType.BLACK));
     initial_board_state.push(new Pawn("/pieces/wp.png", i, 6, PieceType.PAWN, ColorType.WHITE));
 }
@@ -30,13 +29,10 @@ initial_board_state.push(new Rook("/pieces/br.png", 7, 0, PieceType.ROOK, ColorT
 initial_board_state.push(new Rook("/pieces/wr.png", 0, 7, PieceType.ROOK, ColorType.WHITE));
 initial_board_state.push(new Rook("/pieces/wr.png", 7, 7, PieceType.ROOK, ColorType.WHITE));
 
-
-
 initial_board_state.push(new Knight("/pieces/bn.png", 1, 0, PieceType.KNIGHT, ColorType.BLACK));
 initial_board_state.push(new Knight("/pieces/bn.png", 6, 0, PieceType.KNIGHT, ColorType.BLACK));
 initial_board_state.push(new Knight("/pieces/wn.png", 1, 7, PieceType.KNIGHT, ColorType.WHITE));
 initial_board_state.push(new Knight("/pieces/wn.png", 6, 7, PieceType.KNIGHT, ColorType.WHITE));
-
 
 initial_board_state.push(new Bishop("/pieces/bb.png", 2, 0, PieceType.BISHOP, ColorType.BLACK));
 initial_board_state.push(new Bishop("/pieces/bb.png", 5, 0, PieceType.BISHOP, ColorType.BLACK));
@@ -62,9 +58,8 @@ export default function Chessboard() {
         const chessboard = chessboardRef.current;
 
         if (element.classList.contains('chess-piece') && chessboard) {
-            //const x = Math.floor((e.clientX - chessboard.offsetLeft) / 75);
-            //const y = Math.floor((e.clientY - chessboard.offsetTop) / 75);
-            //console.log(referee.tileHasEnemy(x, y, pieces));
+            const x = Math.floor((e.clientX - chessboard.offsetLeft) / 75);
+            const y = Math.floor((e.clientY - chessboard.offsetTop) / 75);
             console.log("Initial pos " + `${[Math.floor((e.clientX - chessboard.offsetLeft) / 75), Math.floor((e.clientY - chessboard.offsetTop) / 75)]}`);
             setGridX(Math.floor((e.clientX - chessboard.offsetLeft) / 75));
             setGridY(Math.floor((e.clientY - chessboard.offsetTop) / 75));
@@ -113,7 +108,7 @@ export default function Chessboard() {
             setPieces((value) => {
                 const pieces = value.map(p => {
                     if (p.x === gridX && p.y === gridY) {
-                        if (p.isValidMove(gridX, gridY, x, y, value)) {
+                        if (p.isValidMove(x, y, value)) {
                             p.x = x;
                             p.y = y;
                         } else {
