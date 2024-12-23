@@ -21,9 +21,8 @@ export abstract class Piece {
         if (piece) boardState.splice(boardState.indexOf(piece), 1);
     }
 
-    isTileEmpty(x:number, y: number, boardState: Piece[]): boolean {
+    isTileEmpty(x: number, y: number, boardState: Piece[]): boolean {
         const piece = boardState.find((p) => p.x === x && p.y === y);
-        console.log(piece === undefined);
         return piece === undefined;
     }
 
@@ -49,7 +48,9 @@ export class Pawn extends Piece {
         super(image, x, y, type, color);
     }
 
-    isValidVerticalMovement(newX: number, newY: number): boolean {
+    isValidVerticalMovement(newX: number, newY: number, boardState: Piece[]): boolean {
+        if (!this.isTileEmpty(newX, newY, boardState)) return false;
+
         if (this.color === ColorType.WHITE) {
             if (this.y === 6) {
                 return this.x === newX && (this.y - newY) <= 2;
@@ -69,28 +70,15 @@ export class Pawn extends Piece {
     }
 
     isValidDiagonalMovement(newX: number, newY: number, boardState: Piece[]): boolean {
-        if (this.color === ColorType.WHITE) {
-            if (
-                (this.y - newY) + (newX - this.x) === 2 ||
-                (this.y - newY) + (this.x - newX) === 2 &&
-                this.isTileOccupiedByEnemy(newX, newY, boardState)
-            ) {
-                const piece = boardState.find((p) => p.x === newX && p.y === newY);
-                this.takeEnemyPiece(piece, boardState);
-                return true;
-            }
-        }
+        const isValidYMovement = this.color === ColorType.WHITE ? this.y - newY === 1 : newY - this.y === 1;
 
-        if (this.color === ColorType.BLACK) {
-            if (
-                (newY - this.y) + (newX - this.x) === 2 ||
-                (newY - this.y) + (this.x - newX) === 2 &&
-                this.isTileOccupiedByEnemy(newX, newY, boardState)
-            ) {
-                const piece = boardState.find((p) => p.x === newX && p.y === newY);
-                this.takeEnemyPiece(piece, boardState);
-                return true;
-            }
+        if (
+            isValidYMovement && Math.abs(this.x - newX) === 1 &&
+            this.isTileOccupiedByEnemy(newX, newY, boardState)
+        ) {
+            const piece = boardState.find((p) => p.x === newX && p.y === newY);
+            this.takeEnemyPiece(piece, boardState);
+            return true;
         }
         return false;
     }
@@ -98,8 +86,7 @@ export class Pawn extends Piece {
     isValidMove(newX: number, newY: number, boardState: Piece[]): boolean {
         return (
             this.isValidDiagonalMovement(newX, newY, boardState) ||
-            this.isValidVerticalMovement(newX, newY) &&
-            this.isTileEmpty(newX, newY, boardState)
+            this.isValidVerticalMovement(newX, newY, boardState)
         );
     }
 

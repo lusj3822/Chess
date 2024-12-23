@@ -60,7 +60,7 @@ export default function Chessboard() {
         if (element.classList.contains('chess-piece') && chessboard) {
             const x = Math.floor((e.clientX - chessboard.offsetLeft) / 75);
             const y = Math.floor((e.clientY - chessboard.offsetTop) / 75);
-            console.log("Initial pos " + `${[Math.floor((e.clientX - chessboard.offsetLeft) / 75), Math.floor((e.clientY - chessboard.offsetTop) / 75)]}`);
+            //console.log("Initial pos " + `${[Math.floor((e.clientX - chessboard.offsetLeft) / 75), Math.floor((e.clientY - chessboard.offsetTop) / 75)]}`);
             setGridX(Math.floor((e.clientX - chessboard.offsetLeft) / 75));
             setGridY(Math.floor((e.clientY - chessboard.offsetTop) / 75));
             setActivePiece(element);
@@ -104,7 +104,7 @@ export default function Chessboard() {
         if (activePiece && chessboard) {
             const x = Math.floor((e.clientX - chessboard.offsetLeft) / 75);
             const y = Math.floor((e.clientY - chessboard.offsetTop) / 75);
-            console.log("Current position: " + `${[x, y]}`);
+            //console.log("Current position: " + `${[x, y]}`);
             setPieces((value) => {
                 const pieces = value.map(p => {
                     if (p.x === gridX && p.y === gridY) {
