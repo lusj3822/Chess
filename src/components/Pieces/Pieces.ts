@@ -15,7 +15,16 @@ export abstract class Piece {
         this.color = color;
     }
 
-    abstract isValidMove(newX: number, newY: number, boardState: Piece[]): boolean;
+    abstract performMove(newX: number, newY: number, boardState: Piece[]): boolean;
+
+    updatePosition(newX: number, newY: number): void {
+        this.x = newX;
+        this.y = newY;
+    }
+
+    isValidCollision(newX: number, newY: number, boardState: Piece[]): boolean {
+        return this.isTileEmpty(newX, newY, boardState) || this.isTileOccupiedByEnemy(newX, newY, boardState);
+    }
 
     takeEnemyPiece(piece: Piece | undefined, boardState: Piece[]): void {
         if (piece) boardState.splice(boardState.indexOf(piece), 1);
@@ -46,6 +55,14 @@ export class Pawn extends Piece {
 
     constructor(image: string, x: number, y:number, type: PieceType, color: ColorType) {
         super(image, x, y, type, color);
+    }
+
+    performMove(newX: number, newY: number, boardState: Piece[]): boolean {
+        if (this.isValidVerticalMovement(newX, newY, boardState) || this.isValidDiagonalMovement(newX, newY, boardState)) {
+            this.updatePosition(newX, newY);
+            return true;
+        }
+        return false;
     }
 
     isValidVerticalMovement(newX: number, newY: number, boardState: Piece[]): boolean {
@@ -83,13 +100,6 @@ export class Pawn extends Piece {
         return false;
     }
 
-    isValidMove(newX: number, newY: number, boardState: Piece[]): boolean {
-        return (
-            this.isValidDiagonalMovement(newX, newY, boardState) ||
-            this.isValidVerticalMovement(newX, newY, boardState)
-        );
-    }
-
     toString(): string {
         return "Pawn";
     }
@@ -101,8 +111,58 @@ export class Rook extends Piece {
         super(image, x, y, type, color);
     }
 
-    isValidMove(newX: number, newY: number, boardState: Piece[]): boolean {
+    performMove(newX: number, newY: number, boardState: Piece[]): boolean {
+        if (this.isValidMove(newX, newY, boardState)) {
+            const piece = boardState.find((p) => p.x === newX && p.y === newY);
+            this.takeEnemyPiece(piece, boardState);
+            this.updatePosition(newX, newY);
+            return true;
+        }
         return false;
+    }
+
+    isValidMove(newX: number, newY: number, boardState: Piece[]): boolean {
+        const valid_collision: boolean = this.isValidCollision(newX, newY, boardState);
+
+        if (Math.abs(this.x - newX) === 0 && valid_collision && this.isPathClear(newX, newY, boardState)) return true;
+        if (Math.abs(this.y - newY) === 0 && valid_collision && this.isPathClear(newX, newY, boardState)) return true;
+        return false;
+    }
+    
+    isPathClear(newX: number, newY: number, boardState: Piece[]) {
+        
+        // Upward check
+        for (let i = newY; i < this.y; i++) {
+            if (!this.isTileEmpty(newX, i, boardState)) {
+                if (this.isTileOccupiedByEnemy(newX, i, boardState)) return true;
+                return false;
+            }
+        }
+
+        // Downward check
+        for (let i = newY; i > this.y; i--) {
+            if (!this.isTileEmpty(newX, i, boardState)) {
+                if (this.isTileOccupiedByEnemy(newX, i, boardState)) return true;
+                return false;
+            }
+        }
+
+        // Left check
+        for (let i = newX; i < this.x; i++) {
+            if (!this.isTileEmpty(i, newY, boardState)) {
+                if (this.isTileOccupiedByEnemy(i, newY, boardState)) return true;
+                return false;
+            }
+        }
+
+        // Right check
+        for (let i = newX; i > this.x; i--) {
+            if (!this.isTileEmpty(i, newY, boardState)) {
+                if (this.isTileOccupiedByEnemy(i, newY, boardState)) return true;
+                return false;
+            }
+        }
+        return true;
     }
 
     toString(): string {
@@ -116,7 +176,7 @@ export class Knight extends Piece {
         super(image, x, y, type, color);
     }
 
-    isValidMove(newX: number, newY: number, boardState: Piece[]): boolean {
+    performMove(newX: number, newY: number, boardState: Piece[]): boolean {
         return false;
     }
 
@@ -131,8 +191,30 @@ export class Bishop extends Piece {
         super(image, x, y, type, color);
     }
 
-    isValidMove(newX: number, newY: number, boardState: Piece[]): boolean {
+    performMove(newX: number, newY: number, boardState: Piece[]): boolean {
+        if (this.isValidMove(newX, newY, boardState)) {
+            const piece = boardState.find((p) => p.x === newX && p.y === newY);
+            this.takeEnemyPiece(piece, boardState);
+            this.updatePosition(newX, newY);
+            return true;
+        }
         return false;
+    }
+
+    isValidMove(newX: number, newY: number, boardState: Piece[]): boolean {
+        const valid_collision: boolean = this.isValidCollision(newX, newY, boardState);
+
+        if (Math.abs(this.x - newX) === Math.abs(this.y - newY) && valid_collision && this.isPathClear(newX, newY, boardState)) return true;
+        return false;
+    }
+
+    isPathClear(newX: number, newY: number, boardState: Piece[]): boolean {
+        for (let i = 0; i < 8; i++) {
+            if (Math.abs(this.x - newX) === i && Math.abs(this.y - newY) === i) {
+                return !this.isTileEmpty(Math.abs(this.x - newX), Math.abs(this.y - newY), boardState);
+            }
+        }
+        return true;
     }
 
     toString(): string {
@@ -146,7 +228,22 @@ export class Queen extends Piece {
         super(image, x, y, type, color);
     }
 
+    performMove(newX: number, newY: number, boardState: Piece[]): boolean {
+        if (this.isValidMove(newX, newY, boardState)) {
+            const piece = boardState.find((p) => p.x === newX && p.y === newY);
+            this.takeEnemyPiece(piece, boardState);
+            this.updatePosition(newX, newY);
+            return true;
+        }
+        return false;
+    }
+
     isValidMove(newX: number, newY: number, boardState: Piece[]): boolean {
+        const valid_collision: boolean = this.isValidCollision(newX, newY, boardState);
+
+        if (Math.abs(this.x - newX) === Math.abs(this.y - newY) && valid_collision) return true;
+        if (Math.abs(this.x - newX) === 0 && valid_collision) return true;
+        if (Math.abs(this.y - newY) === 0 && valid_collision) return true;
         return false;
     }
 
@@ -161,7 +258,7 @@ export class King extends Piece {
         super(image, x, y, type, color);
     }
 
-    isValidMove(newX: number, newY: number, boardState: Piece[]): boolean {
+    performMove(newX: number, newY: number, boardState: Piece[]): boolean {
         return false;
     }
 
