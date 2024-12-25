@@ -12,6 +12,14 @@
     background: #eeeed2;
 }
 
+.highlight::before {
+    content: " ";
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    background-color: rgba(0, 0, 0, 0.2);
+}
+
 .chess-piece {
     width: 75px;
     height: 75px;

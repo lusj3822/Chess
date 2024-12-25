@@ -57,11 +57,35 @@ export default function Chessboard() {
 
     const chessboardRef = useRef<HTMLDivElement>(null);
 
+    function update_valid_moves() {
+        setPieces((currentPieces) => {
+
+            return currentPieces.map((p) => {
+                p.possibleMoves = p.getValidPositions(currentPieces);
+                return p;
+            });
+        });
+    }
+
+    function clear_valid_moves() {
+        setPieces((currentPieces) => {
+
+            return currentPieces.map((p) => {
+                if (p.possibleMoves.length > 0) {
+                    p.clearValidPositions();
+                }
+                return p;
+            });
+        });
+    }
+
     function grab_piece(e: React.MouseEvent<HTMLDivElement, MouseEvent>) {
+        if (activePiece) return;
+        update_valid_moves();
         const element = e.target as HTMLElement;
         const chessboard = chessboardRef.current;
 
-        if (element.classList.contains('chess-piece') && chessboard) {
+        if (!activePiece && element.classList.contains('chess-piece') && chessboard) {
             console.log("Previous position " + `${[Math.floor((e.clientX - chessboard.offsetLeft) / 75), Math.floor((e.clientY - chessboard.offsetTop) / 75)]}`);
             const grab_x = Math.floor((e.clientX - chessboard.offsetLeft) / 75);
             const grab_y = Math.floor((e.clientY - chessboard.offsetTop) / 75);
@@ -123,6 +147,7 @@ export default function Chessboard() {
                 return pieces;
             });
             setActivePiece(null);
+            clear_valid_moves();
         }
     }
 
@@ -132,7 +157,10 @@ export default function Chessboard() {
             const piece = pieces.find(p => p && p.position.x === j && p.position.y === i);
             let image = piece ? piece.image : undefined;
 
-            board.push(<Tile number={i + j} key={`${i}, ${j}`} image={image}/>)
+            let current_piece = activePiece != null ? pieces.find(p => p.position.x === grabPosition.x && p.position.y === grabPosition.y) : undefined;
+            let highlight = current_piece?.possibleMoves ? current_piece.possibleMoves.some(p => p.x === j && p.y === i) : false;
+
+            board.push(<Tile number={i + j} key={`${i}, ${j}`} image={image} highlight={highlight}/>)
         }
     }
 
