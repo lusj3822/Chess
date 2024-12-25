@@ -126,12 +126,9 @@ export default function Chessboard() {
     let board = [];
     for (let i = 0; i < 8; i++) {
         for (let j = 0; j < 8; j++) {
-            let image = undefined;
-            pieces.forEach(p => {
-                if (p.x === j && p.y === i) {
-                    image = p.image;
-                }
-            });
+            const piece = pieces.find(p => p && p.x === j && p.y === i);
+            let image = piece ? piece.image : undefined;
+
             board.push(<Tile number={i + j} key={`${i}, ${j}`} image={image}/>)
         }
     }
