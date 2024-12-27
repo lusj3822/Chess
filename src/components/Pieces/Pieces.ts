@@ -1,11 +1,11 @@
-import { ColorType, PieceType, Position } from "../Chessboard/Chessboard";
+import { ColorType, PieceType, Position } from "../Pieces/types";
 
 export abstract class Piece {
     image: string;
     position: Position;
     type: PieceType;
     color: ColorType;
-    possibleMoves: Position[] = [];
+    validMoves: Position[] = [];
 
     constructor(image: string, position: Position, type: PieceType, color: ColorType) {
         this.image = image;
@@ -14,7 +14,16 @@ export abstract class Piece {
         this.color = color;
     }
 
-    abstract performMove(position: Position, boardState: Piece[]): boolean;
+    performMove(newPosition: Position, boardState: Piece[]): boolean {
+        const valid_collision: boolean = this.isValidCollision(newPosition, boardState);
+        if (this.isValidMove(newPosition, boardState) && valid_collision) {
+            const piece = boardState.find((p) => p.position.x === newPosition.x && p.position.y === newPosition.y);
+            this.takeEnemyPiece(piece, boardState);
+            this.updatePosition(newPosition);
+            return true;
+        }
+        return false;
+    }
 
     updatePosition(position: Position): void {
         this.position = {x: position.x, y: position.y};
@@ -45,8 +54,18 @@ export abstract class Piece {
         return false;
     }
 
-    clearValidPositions() {
-        this.possibleMoves.length = 0;
+    isValidMove(newPosition: Position, boardState: Piece[]): boolean {
+        this.getValidPositions(boardState);
+        if (this.validMoves.some(pos => pos.x === newPosition.x && pos.y === newPosition.y)) {
+            this.clearValidPositions();
+            return true;
+        }
+        this.clearValidPositions();
+        return false
+    }
+
+    clearValidPositions(): void {
+        this.validMoves.length = 0;
     }
 
     abstract getValidPositions(boardState: Piece[]): Position[];
@@ -60,79 +79,48 @@ export class Pawn extends Piece {
         super(image, position, type, color);
     }
 
-    performMove(newPosition: Position, boardState: Piece[]): boolean {
-        if (this.isValidVerticalMovement(newPosition, boardState) || this.isValidDiagonalMovement(newPosition, boardState)) {
-            this.updatePosition(newPosition);
-            return true;
-        }
-        return false;
-    }
-
-    isValidVerticalMovement(newPosition: Position, boardState: Piece[]): boolean {
-        if (!this.isTileEmpty(newPosition, boardState)) return false;
-
-        if (this.color === ColorType.WHITE) {
-            if (this.position.y === 6) {
-                return this.position.x === newPosition.x && (this.position.y - newPosition.y) <= 2;
-            } else {
-                return this.position.x === newPosition.x && (this.position.y - newPosition.y) === 1;
-            }
-        }
-
-        if (this.color === ColorType.BLACK) {
-            if (this.position.y === 1) {
-                return this.position.x === newPosition.x && (newPosition.y - this.position.y) <= 2;
-            } else {
-                return this.position.x === newPosition.x && (newPosition.y - this.position.y) === 1;
-            }
-        }
-        return false;
-    }
-
-    isValidDiagonalMovement(newPosition: Position, boardState: Piece[]): boolean {
-        const isValidYMovement = this.color === ColorType.WHITE ? this.position.y - newPosition.y === 1 : newPosition.y - this.position.y === 1;
-
-        if (
-            isValidYMovement && Math.abs(this.position.x - newPosition.x) === 1 &&
-            this.isTileOccupiedByEnemy(newPosition, boardState)
-        ) {
-            const piece = boardState.find((p) => p.position.x === newPosition.x && p.position.y === newPosition.y);
-            this.takeEnemyPiece(piece, boardState);
-            return true;
-        }
-        return false;
-    }
-
     getValidPositions(boardState: Piece[]): Position[] {
         if (this.color === ColorType.WHITE) {
             if (this.isTileOccupiedByEnemy({x: this.position.x - 1, y: this.position.y - 1}, boardState)) {
-                this.possibleMoves.push({x: this.position.x - 1, y: this.position.y - 1})
+                this.validMoves.push({x: this.position.x - 1, y: this.position.y - 1})
             }
-    
+
+            if (this.position.y === 6) {
+                if (this.isTileEmpty({x: this.position.x, y: this.position.y - 2}, boardState)) {
+                    this.validMoves.push({x: this.position.x, y: this.position.y - 2});
+                }
+            }
+
             if (this.isTileEmpty({x: this.position.x, y: this.position.y - 1}, boardState)) {
-                this.possibleMoves.push({x: this.position.x, y: this.position.y - 1});
+                this.validMoves.push({x: this.position.x, y: this.position.y - 1});
             }
     
             if (this.isTileOccupiedByEnemy({x: this.position.x + 1, y: this.position.y - 1}, boardState)) {
-                this.possibleMoves.push({x: this.position.x + 1, y: this.position.y - 1})
+                this.validMoves.push({x: this.position.x + 1, y: this.position.y - 1})
             }
         }
 
         if (this.color === ColorType.BLACK) {
             if (this.isTileOccupiedByEnemy({x: this.position.x - 1, y: this.position.y + 1}, boardState)) {
-                this.possibleMoves.push({x: this.position.x - 1, y: this.position.y + 1})
+                this.validMoves.push({x: this.position.x - 1, y: this.position.y + 1})
+            }
+
+            if (this.position.y === 1) {
+                if (this.isTileEmpty({x: this.position.x, y: this.position.y + 2}, boardState)) {
+                    this.validMoves.push({x: this.position.x, y: this.position.y + 2});
+                }
             }
     
             if (this.isTileEmpty({x: this.position.x, y: this.position.y + 1}, boardState)) {
-                this.possibleMoves.push({x: this.position.x, y: this.position.y + 1});
+                this.validMoves.push({x: this.position.x, y: this.position.y + 1});
             }
     
             if (this.isTileOccupiedByEnemy({x: this.position.x + 1, y: this.position.y + 1}, boardState)) {
-                this.possibleMoves.push({x: this.position.x + 1, y: this.position.y + 1})
+                this.validMoves.push({x: this.position.x + 1, y: this.position.y + 1})
             }
         }
 
-        return this.possibleMoves;
+        return this.validMoves;
     }
 
     toString(): string {
@@ -146,65 +134,11 @@ export class Rook extends Piece {
         super(image, position, type, color);
     }
 
-    performMove(newPosition: Position, boardState: Piece[]): boolean {
-        if (this.isValidMove(newPosition, boardState)) {
-            const piece = boardState.find((p) => p.position.x === newPosition.x && p.position.y === newPosition.y);
-            this.takeEnemyPiece(piece, boardState);
-            this.updatePosition(newPosition);
-            return true;
-        }
-        return false;
-    }
-
-    isValidMove(newPosition: Position, boardState: Piece[]): boolean {
-        const valid_collision: boolean = this.isValidCollision(newPosition, boardState);
-
-        if (Math.abs(this.position.x - newPosition.x) === 0 && valid_collision && this.isPathClear(newPosition, boardState)) return true;
-        if (Math.abs(this.position.y - newPosition.y) === 0 && valid_collision && this.isPathClear(newPosition, boardState)) return true;
-        return false;
-    }
-    
-    isPathClear(newPosition: Position, boardState: Piece[]) {
-        
-        // Upward check
-        for (let i = newPosition.y; i < this.position.y; i++) {
-            if (!this.isTileEmpty({x: newPosition.x, y: i}, boardState)) {
-                if (this.isTileOccupiedByEnemy({x: newPosition.x, y: i}, boardState)) return true;
-                return false;
-            }
-        }
-
-        // Downward check
-        for (let i = newPosition.y; i > this.position.y; i--) {
-            if (!this.isTileEmpty({x: newPosition.x, y: i}, boardState)) {
-                if (this.isTileOccupiedByEnemy({x: newPosition.x, y: i}, boardState)) return true;
-                return false;
-            }
-        }
-
-        // Left check
-        for (let i = newPosition.x; i < this.position.x; i++) {
-            if (!this.isTileEmpty({x: i, y: newPosition.y}, boardState)) {
-                if (this.isTileOccupiedByEnemy({x: i, y: newPosition.y}, boardState)) return true;
-                return false;
-            }
-        }
-
-        // Right check
-        for (let i = newPosition.x; i > this.position.x; i--) {
-            if (!this.isTileEmpty({x: i, y: newPosition.y}, boardState)) {
-                if (this.isTileOccupiedByEnemy({x: i, y: newPosition.y}, boardState)) return true;
-                return false;
-            }
-        }
-        return true;
-    }
-
     getValidPositions(boardState: Piece[]): Position[] {
         // Upward check
         for (let i = 1; i < 8; i++) {
             if (this.isValidCollision({x: this.position.x, y: this.position.y - i}, boardState)) {
-                this.possibleMoves.push({x: this.position.x, y: this.position.y - i});
+                this.validMoves.push({x: this.position.x, y: this.position.y - i});
             }
             if (!this.isTileEmpty({x: this.position.x, y: this.position.y - i}, boardState)) {
                 break;
@@ -213,7 +147,7 @@ export class Rook extends Piece {
         // Right check
         for (let i = 1; i < 8; i++) {
             if (this.isValidCollision({x: this.position.x + i, y: this.position.y}, boardState)) {
-                this.possibleMoves.push({x: this.position.x + i, y: this.position.y});
+                this.validMoves.push({x: this.position.x + i, y: this.position.y});
             }
             if (!this.isTileEmpty({x: this.position.x + i, y: this.position.y}, boardState)) {
                 break;
@@ -223,7 +157,7 @@ export class Rook extends Piece {
         // Downward check
         for (let i = 1; i < 8; i++) {
             if (this.isValidCollision({x: this.position.x, y: this.position.y + i}, boardState)) {
-                this.possibleMoves.push({x: this.position.x, y: this.position.y + i});
+                this.validMoves.push({x: this.position.x, y: this.position.y + i});
             }
             if (!this.isTileEmpty({x: this.position.x, y: this.position.y + i}, boardState)) {
                 break;
@@ -233,14 +167,14 @@ export class Rook extends Piece {
         // Left check
         for (let i = 1; i < 8; i++) {
             if (this.isValidCollision({x: this.position.x - i, y: this.position.y}, boardState)) {
-                this.possibleMoves.push({x: this.position.x - i, y: this.position.y});
+                this.validMoves.push({x: this.position.x - i, y: this.position.y});
             }
             if (!this.isValidCollision({x: this.position.x - i, y: this.position.y}, boardState)) {
                 break;
             }
         }
 
-        return this.possibleMoves;
+        return this.validMoves;
     }
 
     toString(): string {
@@ -254,85 +188,44 @@ export class Knight extends Piece {
         super(image, position, type, color);
     }
 
-    performMove(newPosition: Position, boardState: Piece[]): boolean {
-        const valid_collision: boolean = this.isValidCollision(newPosition, boardState);
-        if (this.isValidMove(newPosition) && valid_collision) {
-            const piece = boardState.find((p) => p.position.x === newPosition.x && p.position.y === newPosition.y);
-            this.takeEnemyPiece(piece, boardState);
-            this.updatePosition(newPosition);
-            return true;
+    getValidPositions(boardState: Piece[]): Position[] {
+        if (this.isValidCollision({x: this.position.x + 1, y: this.position.y - 2}, boardState)) {
+            this.validMoves.push({x: this.position.x + 1, y: this.position.y - 2});
         }
-        return false;
+
+        if (this.isValidCollision({x: this.position.x - 1, y: this.position.y - 2}, boardState)) {
+            this.validMoves.push({x: this.position.x - 1, y: this.position.y - 2});
+        }
+
+        if (this.isValidCollision({x: this.position.x - 2, y: this.position.y + 1}, boardState)) {
+            this.validMoves.push({x: this.position.x - 2, y: this.position.y + 1});
+        }
+        
+        if (this.isValidCollision({x: this.position.x - 2, y: this.position.y - 1}, boardState)) {
+            this.validMoves.push({x: this.position.x - 2, y: this.position.y - 1});
+        }
+
+        if (this.isValidCollision({x: this.position.x + 2, y: this.position.y - 1}, boardState)) {
+            this.validMoves.push({x: this.position.x + 2, y: this.position.y - 1});
+        }
+
+        if (this.isValidCollision({x: this.position.x + 2, y: this.position.y + 1}, boardState)) {
+            this.validMoves.push({x: this.position.x + 2, y: this.position.y + 1});
+        }
+
+        if (this.isValidCollision({x: this.position.x - 1, y: this.position.y + 2}, boardState)) {
+            this.validMoves.push({x: this.position.x - 1, y: this.position.y + 2});
+        }
+
+        if (this.isValidCollision({x: this.position.x + 1, y: this.position.y + 2}, boardState)) {
+            this.validMoves.push({x: this.position.x + 1, y: this.position.y + 2});
+        }
+
+        return this.validMoves;
     }
 
     toString(): string {
         return "Knight";
-    }
-
-
-    isValidMove(newPosition: Position): boolean {
-
-        // TOP LINE
-        if (this.position.y - newPosition.y === 2) {
-            if (newPosition.x - this.position.x === 1) return true;
-            if (this.position.x - newPosition.x === 1) return true;
-        }
-
-        // RIGHT LINE
-        if (newPosition.x - this.position.x === 2) {
-            if (newPosition.y - this.position.y === 1) return true;
-            if (this.position.y - newPosition.y === 1) return true;
-        }
-
-        // LEFT LINE
-        if (this.position.x - newPosition.x === 2) {
-            if (newPosition.y - this.position.y === 1) return true;
-            if (this.position.y - newPosition.y === 1) return true;
-        }
-
-        // BOTTOM LINE
-        if (newPosition.y - this.position.y === 2) {
-            if (newPosition.x - this.position.x === 1) return true;
-            if (this.position.x - newPosition.x === 1) return true;
-        }
-
-        return false;
-    }
-
-    getValidPositions(boardState: Piece[]): Position[] {
-        if (this.isValidMove({x: this.position.x + 1, y: this.position.y - 2}) && this.isValidCollision({x: this.position.x + 1, y: this.position.y - 2}, boardState)) {
-            this.possibleMoves.push({x: this.position.x + 1, y: this.position.y - 2});
-        }
-
-        if (this.isValidMove({x: this.position.x - 1, y: this.position.y - 2}) && this.isValidCollision({x: this.position.x - 1, y: this.position.y - 2}, boardState)) {
-            this.possibleMoves.push({x: this.position.x - 1, y: this.position.y - 2});
-        }
-
-        if (this.isValidMove({x: this.position.x - 2, y: this.position.y + 1}) && this.isValidCollision({x: this.position.x - 2, y: this.position.y + 1}, boardState)) {
-            this.possibleMoves.push({x: this.position.x - 2, y: this.position.y + 1});
-        }
-        
-        if (this.isValidMove({x: this.position.x - 2, y: this.position.y - 1}) && this.isValidCollision({x: this.position.x - 2, y: this.position.y - 1}, boardState)) {
-            this.possibleMoves.push({x: this.position.x - 2, y: this.position.y - 1});
-        }
-
-        if (this.isValidMove({x: this.position.x + 2, y: this.position.y - 1}) && this.isValidCollision({x: this.position.x + 2, y: this.position.y - 1}, boardState)) {
-            this.possibleMoves.push({x: this.position.x + 2, y: this.position.y - 1});
-        }
-
-        if (this.isValidMove({x: this.position.x + 2, y: this.position.y + 1}) && this.isValidCollision({x: this.position.x + 2, y: this.position.y + 1}, boardState)) {
-            this.possibleMoves.push({x: this.position.x + 2, y: this.position.y + 1});
-        }
-
-        if (this.isValidMove({x: this.position.x - 1, y: this.position.y + 2}) && this.isValidCollision({x: this.position.x - 1, y: this.position.y + 2}, boardState)) {
-            this.possibleMoves.push({x: this.position.x - 1, y: this.position.y + 2});
-        }
-
-        if (this.isValidMove({x: this.position.x + 1, y: this.position.y + 2}) && this.isValidCollision({x: this.position.x + 1, y: this.position.y + 2}, boardState)) {
-            this.possibleMoves.push({x: this.position.x + 1, y: this.position.y + 2});
-        }
-
-        return this.possibleMoves;
     }
 
 }
@@ -343,85 +236,33 @@ export class Bishop extends Piece {
         super(image, position, type, color);
     }
     
-
-    performMove(newPosition: Position, boardState: Piece[]): boolean {
-        if (this.isValidMove(newPosition, boardState)) {
-            const piece = boardState.find((p) => p.position.x === newPosition.x && p.position.y === newPosition.y);
-            this.takeEnemyPiece(piece, boardState);
-            this.updatePosition(newPosition);
-            return true;
-        }
-        return false;
-    }
-
-    isValidMove(newPosition: Position, boardState: Piece[]): boolean {
-        const valid_collision: boolean = this.isValidCollision(newPosition, boardState);
-
-        if (Math.abs(this.position.x - newPosition.x) === Math.abs(this.position.y - newPosition.y) && valid_collision && this.isPathClear(newPosition, boardState)) return true;
-        return false;
-    }
-
-    isPathClear(newPosition: Position, boardState: Piece[]): boolean {
-        for (let i = 1; i < 8; i++) {
-
-            // Up right movement
-            if (newPosition.x - this.position.x > i && this.position.y - newPosition.y > i) {
-                if (!this.isTileEmpty({x: this.position.x + i, y: this.position.y - i}, boardState)) {
-                    return false;
-                }
-            }
-            
-            // Up left movement
-            if (this.position.x - newPosition.x > i && this.position.y - newPosition.y > i) {
-                if (!this.isTileEmpty({x: this.position.x - i, y: this.position.y - i}, boardState)) {
-                    return false;
-                }
-            }
-
-            // Down right movement
-            if (newPosition.x - this.position.x > i && newPosition.y - this.position.y > i) {
-                if (!this.isTileEmpty({x: this.position.x + i, y: this.position.y + i}, boardState)) {
-                    return false;
-                }
-            }
-
-            // Down left movement
-            if (this.position.x - newPosition.x > i && newPosition.y - this.position.y > i) {
-                if (!this.isTileEmpty({x: this.position.x - i, y: this.position.y + i}, boardState)) {
-                    return false;
-                }
-            }
-        }
-        return true;
-    }
-
     getValidPositions(boardState: Piece[]): Position[] {
         for (let i = 1; i < 8; i++) {
             if (this.isValidCollision({x: this.position.x + i, y: this.position.y - i}, boardState)) {
-                this.possibleMoves.push({x: this.position.x + i, y: this.position.y - i});
+                this.validMoves.push({x: this.position.x + i, y: this.position.y - i});
             }
             if (!this.isTileEmpty({x: this.position.x + i, y: this.position.y - i}, boardState)) break;
         }
         for (let i = 1; i < 8; i++) {
             if (this.isValidCollision({x: this.position.x - i, y: this.position.y - i}, boardState)) {
-                this.possibleMoves.push({x: this.position.x - i, y: this.position.y - i});
+                this.validMoves.push({x: this.position.x - i, y: this.position.y - i});
             }
             if (!this.isTileEmpty({x: this.position.x - i, y: this.position.y - i}, boardState)) break;
         }
         for (let i = 1; i < 8; i++) {
             if (this.isValidCollision({x: this.position.x - i, y: this.position.y + i}, boardState)) {
-                this.possibleMoves.push({x: this.position.x - i, y: this.position.y + i});
+                this.validMoves.push({x: this.position.x - i, y: this.position.y + i});
             }
             if (!this.isTileEmpty({x: this.position.x - i, y: this.position.y + i}, boardState)) break;
         }
         for (let i = 1; i < 8; i++) {
             if (this.isValidCollision({x: this.position.x + i, y: this.position.y + i}, boardState)) {
-                this.possibleMoves.push({x: this.position.x + i, y: this.position.y + i});
+                this.validMoves.push({x: this.position.x + i, y: this.position.y + i});
             }
             if (!this.isTileEmpty({x: this.position.x + i, y: this.position.y + i}, boardState)) break;
         }
 
-        return this.possibleMoves;
+        return this.validMoves;
     }
 
     toString(): string {
@@ -435,95 +276,11 @@ export class Queen extends Piece {
         super(image, position, type, color);
     }
 
-    performMove(newPosition: Position, boardState: Piece[]): boolean {
-        if (this.isValidMove(newPosition, boardState)) {
-            const piece = boardState.find((p) => p.position.x === newPosition.x && p.position.y === newPosition.y);
-            this.takeEnemyPiece(piece, boardState);
-            this.updatePosition(newPosition);
-            return true;
-        }
-        return false;
-    }
-
-    isValidMove(newPosition: Position, boardState: Piece[]): boolean {
-        const valid_collision: boolean = this.isValidCollision(newPosition, boardState);
-
-        if (Math.abs(this.position.x - newPosition.x) === Math.abs(this.position.y - newPosition.y) && valid_collision && this.isPathClear(newPosition, boardState)) return true;
-        if (Math.abs(this.position.x - newPosition.x) === 0 && valid_collision && this.isPathClear(newPosition, boardState)) return true;
-        if (Math.abs(this.position.y - newPosition.y) === 0 && valid_collision && this.isPathClear(newPosition, boardState)) return true;
-        return false;
-    }
-
-    isPathClear(newPosition: Position, boardState: Piece[]): boolean {
-
-        for (let i = 1; i < 8; i++) {
-
-            // Up right movement
-            if (newPosition.x - this.position.x > i && this.position.y - newPosition.y > i) {
-                if (!this.isTileEmpty({x: this.position.x + i, y: this.position.y - i}, boardState)) {
-                    console.log("Up right error");
-                    return false;
-                }
-            }
-            
-            // Up left movement
-            if (this.position.x - newPosition.x > i && this.position.y - newPosition.y > i) {
-                if (!this.isTileEmpty({x: this.position.x - i, y: this.position.y - i}, boardState)) {
-                    return false;
-                }
-            }
-
-            // Down right movement
-            if (newPosition.x - this.position.x > i && newPosition.y - this.position.y > i) {
-                if (!this.isTileEmpty({x: this.position.x + i, y: this.position.y + i}, boardState)) {
-                    return false;
-                }
-            }
-
-            // Down left movement
-            if (this.position.x - newPosition.x > i && newPosition.y - this.position.y > i) {
-                if (!this.isTileEmpty({x: this.position.x - i, y: this.position.y + i}, boardState)) {
-                    return false;
-                }
-            }
-        }
-
-        if (this.position.x === newPosition.x) {
-            for (let i = newPosition.y; i < this.position.y; i++) {
-                if (!this.isValidCollision({x: newPosition.x, y: i}, boardState)) {
-                    return false;
-                }
-            }
-
-            for (let i = newPosition.y; i > this.position.y; i--) {
-                if (!this.isValidCollision({x: newPosition.x, y: i}, boardState)) {
-                    return false;
-                }
-            }
-        }
-
-        if (this.position.y === newPosition.y) {
-            for (let i = newPosition.x; i < this.position.x; i++) {
-                if (!this.isValidCollision({x: i, y: newPosition.y}, boardState)) {
-                    return false;
-                }
-            }
-            
-            for (let i = newPosition.x; i > this.position.x; i--) {
-                if (!this.isValidCollision({x: i, y: newPosition.y}, boardState)) {
-                    return false;
-                }
-            }
-        }
-
-        return true;
-    }
-
     getValidPositions(boardState: Piece[]): Position[] {
         // Upward check
         for (let i = 1; i < 8; i++) {
             if (this.isValidCollision({x: this.position.x, y: this.position.y - i}, boardState)) {
-                this.possibleMoves.push({x: this.position.x, y: this.position.y - i});
+                this.validMoves.push({x: this.position.x, y: this.position.y - i});
             }
             if (!this.isTileEmpty({x: this.position.x, y: this.position.y - i}, boardState)) {
                 break;
@@ -532,7 +289,7 @@ export class Queen extends Piece {
         // Right check
         for (let i = 1; i < 8; i++) {
             if (this.isValidCollision({x: this.position.x + i, y: this.position.y}, boardState)) {
-                this.possibleMoves.push({x: this.position.x + i, y: this.position.y});
+                this.validMoves.push({x: this.position.x + i, y: this.position.y});
             }
             if (!this.isTileEmpty({x: this.position.x + i, y: this.position.y}, boardState)) {
                 break;
@@ -542,7 +299,7 @@ export class Queen extends Piece {
         // Downward check
         for (let i = 1; i < 8; i++) {
             if (this.isValidCollision({x: this.position.x, y: this.position.y + i}, boardState)) {
-                this.possibleMoves.push({x: this.position.x, y: this.position.y + i});
+                this.validMoves.push({x: this.position.x, y: this.position.y + i});
             }
             if (!this.isTileEmpty({x: this.position.x, y: this.position.y + i}, boardState)) {
                 break;
@@ -552,39 +309,39 @@ export class Queen extends Piece {
         // Left check
         for (let i = 1; i < 8; i++) {
             if (this.isValidCollision({x: this.position.x - i, y: this.position.y}, boardState)) {
-                this.possibleMoves.push({x: this.position.x - i, y: this.position.y});
+                this.validMoves.push({x: this.position.x - i, y: this.position.y});
             }
-            if (!this.isValidCollision({x: this.position.x - i, y: this.position.y}, boardState)) {
+            if (!this.isTileEmpty({x: this.position.x - i, y: this.position.y}, boardState)) {
                 break;
             }
         }
 
         for (let i = 1; i < 8; i++) {
             if (this.isValidCollision({x: this.position.x + i, y: this.position.y - i}, boardState)) {
-                this.possibleMoves.push({x: this.position.x + i, y: this.position.y - i});
+                this.validMoves.push({x: this.position.x + i, y: this.position.y - i});
             }
             if (!this.isTileEmpty({x: this.position.x + i, y: this.position.y - i}, boardState)) break;
         }
         for (let i = 1; i < 8; i++) {
             if (this.isValidCollision({x: this.position.x - i, y: this.position.y - i}, boardState)) {
-                this.possibleMoves.push({x: this.position.x - i, y: this.position.y - i});
+                this.validMoves.push({x: this.position.x - i, y: this.position.y - i});
             }
             if (!this.isTileEmpty({x: this.position.x - i, y: this.position.y - i}, boardState)) break;
         }
         for (let i = 1; i < 8; i++) {
             if (this.isValidCollision({x: this.position.x - i, y: this.position.y + i}, boardState)) {
-                this.possibleMoves.push({x: this.position.x - i, y: this.position.y + i});
+                this.validMoves.push({x: this.position.x - i, y: this.position.y + i});
             }
             if (!this.isTileEmpty({x: this.position.x - i, y: this.position.y + i}, boardState)) break;
         }
         for (let i = 1; i < 8; i++) {
             if (this.isValidCollision({x: this.position.x + i, y: this.position.y + i}, boardState)) {
-                this.possibleMoves.push({x: this.position.x + i, y: this.position.y + i});
+                this.validMoves.push({x: this.position.x + i, y: this.position.y + i});
             }
             if (!this.isTileEmpty({x: this.position.x + i, y: this.position.y + i}, boardState)) break;
         }
 
-        return this.possibleMoves;
+        return this.validMoves;
     }
 
     toString(): string {
@@ -598,59 +355,50 @@ export class King extends Piece {
         super(image, position, type, color);
     }
 
-    performMove(newPosition: Position, boardState: Piece[]): boolean {
-        if (this.isValidMove(newPosition, boardState)) {
-            const piece = boardState.find((p) => p.position.x === newPosition.x && p.position.y === newPosition.y);
-            this.takeEnemyPiece(piece, boardState);
-            this.updatePosition(newPosition);
+    isValidMove(newPosition: Position, boardState: Piece[]): boolean {
+        this.getValidPositions(boardState);
+        if (this.validMoves.some(pos => pos.x === newPosition.x && pos.y === newPosition.y)) {
+            this.clearValidPositions();
             return true;
         }
-        return false;
-    }
-
-    isValidMove(newPosition: Position, boardState: Piece[]): boolean {
-        const valid_collision: boolean = this.isValidCollision(newPosition, boardState);
-
-        if (Math.abs(this.position.x - newPosition.x) === 1 && Math.abs(this.position.y - newPosition.y) === 1 && valid_collision) return true;
-        if (this.position.y === newPosition.y && Math.abs(this.position.x - newPosition.x) === 1 && valid_collision) return true;
-        if (this.position.x === newPosition.x && Math.abs(this.position.y - newPosition.y) === 1 && valid_collision) return true;
-        return false;
+        this.clearValidPositions();
+        return false
     }
 
     getValidPositions(boardState: Piece[]): Position[] {
         if (this.isValidCollision({x: this.position.x - 1, y: this.position.y - 1}, boardState)) {
-            this.possibleMoves.push({x: this.position.x - 1, y: this.position.y - 1})
+            this.validMoves.push({x: this.position.x - 1, y: this.position.y - 1})
         }
 
         if (this.isValidCollision({x: this.position.x, y: this.position.y - 1}, boardState)) {
-            this.possibleMoves.push({x: this.position.x, y: this.position.y - 1});
+            this.validMoves.push({x: this.position.x, y: this.position.y - 1});
         }
 
         if (this.isValidCollision({x: this.position.x + 1, y: this.position.y - 1}, boardState)) {
-            this.possibleMoves.push({x: this.position.x + 1, y: this.position.y - 1})
+            this.validMoves.push({x: this.position.x + 1, y: this.position.y - 1})
         }
 
         if (this.isValidCollision({x: this.position.x + 1, y: this.position.y}, boardState)) {
-            this.possibleMoves.push({x: this.position.x + 1, y: this.position.y})
+            this.validMoves.push({x: this.position.x + 1, y: this.position.y})
         }
 
         if (this.isValidCollision({x: this.position.x + 1, y: this.position.y + 1}, boardState)) {
-            this.possibleMoves.push({x: this.position.x + 1, y: this.position.y + 1})
+            this.validMoves.push({x: this.position.x + 1, y: this.position.y + 1})
         }
 
         if (this.isValidCollision({x: this.position.x, y: this.position.y + 1}, boardState)) {
-            this.possibleMoves.push({x: this.position.x, y: this.position.y + 1})
+            this.validMoves.push({x: this.position.x, y: this.position.y + 1})
         }
 
         if (this.isValidCollision({x: this.position.x - 1, y: this.position.y}, boardState)) {
-            this.possibleMoves.push({x: this.position.x - 1, y: this.position.y})
+            this.validMoves.push({x: this.position.x - 1, y: this.position.y})
         }
 
         if (this.isValidCollision({x: this.position.x - 1, y: this.position.y + 1}, boardState)) {
-            this.possibleMoves.push({x: this.position.x - 1, y: this.position.y + 1})
+            this.validMoves.push({x: this.position.x - 1, y: this.position.y + 1})
         }
         
-        return this.possibleMoves;
+        return this.validMoves;
     }
 
     toString(): string {

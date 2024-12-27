@@ -5,11 +5,11 @@
 }
 
 .black-tile {
-    background: #769656;
+    background: #B48764
 }
 
 .white-tile {
-    background: #eeeed2;
+    background: #F0D8B7
 }
 
 .highlight::before {
@@ -18,6 +18,7 @@
     height: 24px;
     border-radius: 50%;
     background-color: rgba(0, 0, 0, 0.2);
+    z-index: 7;
 }
 
 .chess-piece {
@@ -32,4 +33,5 @@
 
 .chess-piece:active {
     cursor: grabbing;
+    z-index: 7;
 }
