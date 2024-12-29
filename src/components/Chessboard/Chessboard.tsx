@@ -1,57 +1,51 @@
 import './chessboard.css';
 import Tile from '../Tile/Tile';
-import { useRef, useState } from 'react';
-import { Piece } from '../Pieces/Pieces';
-import { initial_board_state } from '../Pieces/constants';
-import { Position, ColorType } from '../Pieces/types';
+import { useRef, useState, useEffect } from 'react';
+import { Chess } from 'chess.js';
 
 interface Props {
     totalTurns: number;
     setTotalTurns: React.Dispatch<React.SetStateAction<number>>;
 }
 
-export default function Chessboard({totalTurns, setTotalTurns}: Props) {
-    const [activePiece, setActivePiece] = useState<HTMLElement | null>(null);
-    const [pieces, setPieces] = useState<Piece[]>(initial_board_state);
-    const [grabPosition, setGrabPosition] = useState<Position>({x: -1, y: -1});
-
+export default function Chessboard({ totalTurns, setTotalTurns }: Props) {
+    const chess = useRef(new Chess());
     const chessboardRef = useRef<HTMLDivElement>(null);
 
-    function updateValidMoves(): void {
-        for (const piece of pieces) {
-            piece.getValidPositions(pieces);
-        }
+    const [activePiece, setActivePiece] = useState<HTMLElement | null>(null);
+    const [grabTile, setGrabTile] = useState<string>("");
+    const [chessboardState, setChessboardState] = useState(chess.current.board().flat());
+    const [checkmate, setCheckmate] = useState<boolean>(false);
+
+    useEffect(() => {
+        setChessboardState(chess.current.board().flat());
+    }, [totalTurns]);
+
+    function getPosition(x: number, y: number): string {
+        const file = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h'][x];
+        return `${file}${8 - y}`;
     }
 
-    function clearValidMoves() {
-        for (const piece of pieces) {
-            piece.clearValidPositions();
-        }
-    }
-
-    function grab_piece(e: React.MouseEvent<HTMLDivElement, MouseEvent>) {
-        if (activePiece) return;
-        updateValidMoves();
+    function grabPiece(e: React.MouseEvent<HTMLDivElement, MouseEvent>) {
         const element = e.target as HTMLElement;
         const chessboard = chessboardRef.current;
 
-        if (!activePiece && element.classList.contains('chess-piece') && chessboard) {
-            const grab_x = Math.floor((e.clientX - chessboard.offsetLeft) / 75);
-            const grab_y = Math.floor((e.clientY - chessboard.offsetTop) / 75);
-            setGrabPosition({x: grab_x, y: grab_y});
+        if (!checkmate && element.classList.contains('chess-piece') && chessboard) {
+            const x = Math.floor((e.clientX - chessboard.offsetLeft) / 75);
+            const y = Math.floor((e.clientY - chessboard.offsetTop) / 75);
+
+            setGrabTile(getPosition(x, y));
             setActivePiece(element);
         }
     }
 
-    function move_piece(e: React.MouseEvent<HTMLDivElement, MouseEvent>) {
-        const chessboard = chessboardRef.current;
-
-        if (activePiece && chessboard) {
+    function movePiece(e: React.MouseEvent<HTMLDivElement, MouseEvent>) {
+        if (activePiece && chessboardRef.current) {
             const size_of_half_piece = 37.5;
-            const min_x = chessboard.offsetLeft - size_of_half_piece;
-            const min_y = chessboard.offsetTop - size_of_half_piece;
-            const max_x = chessboard.offsetLeft + chessboard.clientWidth - size_of_half_piece;
-            const max_y = chessboard.offsetTop + chessboard.clientHeight - size_of_half_piece;
+            const min_x = chessboardRef.current.offsetLeft - size_of_half_piece;
+            const min_y = chessboardRef.current.offsetTop - size_of_half_piece;
+            const max_x = chessboardRef.current.offsetLeft + chessboardRef.current.clientWidth - size_of_half_piece;
+            const max_y = chessboardRef.current.offsetTop + chessboardRef.current.clientHeight - size_of_half_piece;
 
             const x = e.clientX - 40;
             const y = e.clientY - 50;
@@ -74,76 +68,61 @@ export default function Chessboard({totalTurns, setTotalTurns}: Props) {
         }
     }
 
-    function drop_piece(e: React.MouseEvent<HTMLDivElement, MouseEvent>) {
+    function dropPiece(e: React.MouseEvent<HTMLDivElement, MouseEvent>) {
         const chessboard = chessboardRef.current;
-
         if (activePiece && chessboard) {
             const x = Math.floor((e.clientX - chessboard.offsetLeft) / 75);
             const y = Math.floor((e.clientY - chessboard.offsetTop) / 75);
-            console.log(totalTurns);
-            setPieces((value) => {
-                const pieces = value.map(p => {
-                    if (p.position.x === grabPosition.x && p.position.y === grabPosition.y) {
-                        if (p.color === ColorType.WHITE && totalTurns % 2 !== 0) {
-                            if (p.performMove({x: x, y: y}, value)) {
-                                setTimeout(() => {
-                                    setTotalTurns(totalTurns + 1);
-                                }, 0);
-                            } else {
-                                activePiece.style.removeProperty('top');
-                                activePiece.style.removeProperty('left');
-                            }
+            const targetTile = getPosition(x, y);
 
-                        } else {
-                            activePiece.style.removeProperty('top');
-                            activePiece.style.removeProperty('left');
-                        }
+            try {
+                const move = chess.current.move({ from: grabTile, to: targetTile });
 
-                        if (p.color === ColorType.BLACK && totalTurns % 2 === 0) {
-                            if (p.performMove({x: x, y: y}, value)) {
-                                setTimeout(() => {
-                                    setTotalTurns(totalTurns + 1);
-                                }, 0);
-                            } else {
-                                activePiece.style.removeProperty('top');
-                                activePiece.style.removeProperty('left');
-                            }
-                        } else {
-                            activePiece.style.removeProperty('top');
-                            activePiece.style.removeProperty('left');
-                        }
-                    }
-                    return p;
-                });
-                return pieces;
-            });
+                if (move) {
+                    setTotalTurns((prev) => prev + 1);
+                }
+
+                if (chess.current.isCheckmate()) {
+                    setCheckmate(true);
+                }
+
+            } catch (error) {
+                activePiece.style.removeProperty('position');
+                activePiece.style.removeProperty('top');
+                activePiece.style.removeProperty('left');
+                setActivePiece(null);
+            }
             setActivePiece(null);
-            clearValidMoves();
         }
     }
 
-    let board = [];
-    for (let i = 0; i < 8; i++) {
-        for (let j = 0; j < 8; j++) {
-            const piece = pieces.find(p => p && p.position.x === j && p.position.y === i);
-            let image = piece ? piece.image : undefined;
-
-            let current_piece = activePiece != null ? pieces.find(p => p.position.x === grabPosition.x && p.position.y === grabPosition.y) : undefined;
-            let highlight = current_piece?.validMoves ? current_piece.validMoves.some(p => p.x === j && p.y === i) : false;
-
-            board.push(<Tile number={i + j} key={`${i}, ${j}`} image={image} highlight={highlight}/>)
-        }
+    function resetBoard() {
+        chess.current = new Chess();
+        setChessboardState(chess.current.board().flat());
+        setTotalTurns(0);
+        setCheckmate(false);
     }
 
     return (
-        <div 
-            className='chessboard' 
-            onMouseMove={(e) => move_piece(e)} 
-            onMouseDown={(e) => grab_piece(e)} 
-            onMouseUp={(e) => drop_piece(e)}
+        <div
+            className='chessboard'
+            onMouseMove={(e) => movePiece(e)}
+            onMouseDown={(e) => grabPiece(e)}
+            onMouseUp={(e) => dropPiece(e)}
             ref={chessboardRef}
         >
-            {board}
+            <div className='game-over-screen' style={{display: checkmate ? 'block' : 'none'}}>
+                <h1>{totalTurns % 2 === 0 ? "White wins" : "Black wins"}</h1>
+                <button onClick={resetBoard}>Play again</button>
+            </div>
+            {chessboardState.map((piece, i) => (
+                <Tile
+                    key={i}
+                    number={(i + Math.floor(i / 8)) % 2}
+                    image={piece ? `/pieces/${piece.color}${piece.type}.png` : undefined}
+                    highlight={false}
+                />
+            ))}
         </div>
-    )
+    );
 }

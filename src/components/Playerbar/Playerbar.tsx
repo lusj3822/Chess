@@ -14,7 +14,7 @@ export default function Playerbar({className, image, userName, turnStatus}: Prop
             <div className='user-info'>
                 <img src={`${image}`}></img>
                 <h2>{`${userName}`}</h2>
-                <h3 className={turnStatus === "Your turn" ? "green" : "red"}>{`${turnStatus}`}</h3>
+                <h3 className={turnStatus === "Your turn" ? "active" : "inactive"}>{`${turnStatus}`}</h3>
             </div>
         </div>
     )

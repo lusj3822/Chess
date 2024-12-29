@@ -33,5 +33,5 @@
 
 .chess-piece:active {
     cursor: grabbing;
-    z-index: 7;
+    z-index: 6;
 }

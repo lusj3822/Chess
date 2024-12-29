@@ -50,10 +50,10 @@ h3 {
     font-weight: 800;
 }
 
-h3.green {
+h3.active {
     color: green;
 }
 
-h3.red {
-    color: red;
+h3.inactive {
+    display: none;
 }
