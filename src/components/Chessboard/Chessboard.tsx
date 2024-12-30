@@ -4,11 +4,11 @@ import { useRef, useState, useEffect } from 'react';
 import { Chess, Square, SQUARES } from 'chess.js';
 
 interface Props {
-    totalTurns: number;
-    setTotalTurns: React.Dispatch<React.SetStateAction<number>>;
+    currentTurn: 'w' | 'b';
+    setCurrentTurn: React.Dispatch<React.SetStateAction<'w' | 'b'>>;
 }
 
-export default function Chessboard({ totalTurns, setTotalTurns }: Props) {
+export default function Chessboard({ currentTurn, setCurrentTurn }: Props) {
     const chess = useRef(new Chess());
     const chessboardRef = useRef<HTMLDivElement>(null);
 
@@ -19,7 +19,7 @@ export default function Chessboard({ totalTurns, setTotalTurns }: Props) {
 
     useEffect(() => {
         setChessboardState(chess.current.board().flat());
-    }, [totalTurns]);
+    }, [currentTurn]);
 
     function getPosition(x: number, y: number): string {
         const file = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h'][x];
@@ -79,7 +79,7 @@ export default function Chessboard({ totalTurns, setTotalTurns }: Props) {
                 const move = chess.current.move({ from: grabSquare, to: targetSquare });
 
                 if (move) {
-                    setTotalTurns((prev) => prev + 1);
+                    setCurrentTurn((turn) => turn === "w" ? "b" : "w");
                 }
 
                 if (chess.current.isCheckmate()) {
@@ -100,7 +100,7 @@ export default function Chessboard({ totalTurns, setTotalTurns }: Props) {
     function resetBoard() {
         chess.current = new Chess();
         setChessboardState(chess.current.board().flat());
-        setTotalTurns(0);
+        setCurrentTurn("w");
         setCheckmate(false);
     }
 
@@ -121,7 +121,7 @@ export default function Chessboard({ totalTurns, setTotalTurns }: Props) {
             ref={chessboardRef}
         >
             <div className='game-over-screen' style={{display: checkmate ? 'block' : 'none'}}>
-                <h1>{totalTurns % 2 === 0 ? "White wins" : "Black wins"}</h1>
+                <h1>{currentTurn === "b" ? "White wins" : "Black wins"}</h1>
                 <button onClick={resetBoard}>Play again</button>
             </div>
             {SQUARES.map((square, i) => (

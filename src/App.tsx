@@ -5,26 +5,15 @@ import Playerbar from './components/Playerbar/Playerbar';
 import { useState } from 'react';
 
 function App() {
-  const [totalTurns, setTotalTurns] = useState<number>(1);
+  const [currentTurn, setCurrentTurn] = useState<'w' | 'b'>('w');
 
-  let blackTurn;
-  if (totalTurns % 2 === 0) {
-    blackTurn = "Your turn";
-  } else {
-    blackTurn = "Opponents turn";
-  }
-
-  let whiteTurn;
-  if (totalTurns % 2 !== 0) {
-    whiteTurn = "Your turn";
-  } else {
-    whiteTurn = "Opponents turn";
-  }
+  let blackTurn = currentTurn === "b" ? "Your turn" : "";
+  let whiteTurn = currentTurn === "w" ? "Your turn" : "";
 
   return (
     <div>
       <Playerbar className='opponent-player-bar' image='dog.png' userName='Opponent' turnStatus={blackTurn}/>
-      <Chessboard totalTurns={totalTurns} setTotalTurns={setTotalTurns}/>
+      <Chessboard currentTurn={currentTurn} setCurrentTurn={setCurrentTurn}/>
       <Playerbar className='player-bar' image='cat.jpg' userName='Player' turnStatus={whiteTurn}/>
     </div>
   )
