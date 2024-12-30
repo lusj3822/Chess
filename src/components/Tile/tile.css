@@ -18,7 +18,7 @@
     height: 24px;
     border-radius: 50%;
     background-color: rgba(0, 0, 0, 0.2);
-    z-index: 7;
+    z-index: 6;
 }
 
 .chess-piece {

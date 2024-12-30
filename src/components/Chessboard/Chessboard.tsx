@@ -1,7 +1,7 @@
 import './chessboard.css';
 import Tile from '../Tile/Tile';
 import { useRef, useState, useEffect } from 'react';
-import { Chess } from 'chess.js';
+import { Chess, Square, SQUARES } from 'chess.js';
 
 interface Props {
     totalTurns: number;
@@ -13,7 +13,7 @@ export default function Chessboard({ totalTurns, setTotalTurns }: Props) {
     const chessboardRef = useRef<HTMLDivElement>(null);
 
     const [activePiece, setActivePiece] = useState<HTMLElement | null>(null);
-    const [grabTile, setGrabTile] = useState<string>("");
+    const [grabSquare, setGrabSquare] = useState<string>("");
     const [chessboardState, setChessboardState] = useState(chess.current.board().flat());
     const [checkmate, setCheckmate] = useState<boolean>(false);
 
@@ -34,7 +34,7 @@ export default function Chessboard({ totalTurns, setTotalTurns }: Props) {
             const x = Math.floor((e.clientX - chessboard.offsetLeft) / 75);
             const y = Math.floor((e.clientY - chessboard.offsetTop) / 75);
 
-            setGrabTile(getPosition(x, y));
+            setGrabSquare(getPosition(x, y));
             setActivePiece(element);
         }
     }
@@ -73,10 +73,10 @@ export default function Chessboard({ totalTurns, setTotalTurns }: Props) {
         if (activePiece && chessboard) {
             const x = Math.floor((e.clientX - chessboard.offsetLeft) / 75);
             const y = Math.floor((e.clientY - chessboard.offsetTop) / 75);
-            const targetTile = getPosition(x, y);
+            const targetSquare = getPosition(x, y);
 
             try {
-                const move = chess.current.move({ from: grabTile, to: targetTile });
+                const move = chess.current.move({ from: grabSquare, to: targetSquare });
 
                 if (move) {
                     setTotalTurns((prev) => prev + 1);
@@ -93,6 +93,7 @@ export default function Chessboard({ totalTurns, setTotalTurns }: Props) {
                 setActivePiece(null);
             }
             setActivePiece(null);
+            setGrabSquare("");
         }
     }
 
@@ -101,6 +102,14 @@ export default function Chessboard({ totalTurns, setTotalTurns }: Props) {
         setChessboardState(chess.current.board().flat());
         setTotalTurns(0);
         setCheckmate(false);
+    }
+
+    function isHighlighted(square: string): boolean {
+        if (grabSquare) {
+            const validMoves = chess.current.moves({ square: grabSquare as Square, verbose: true });
+            return validMoves.some((move) => move.to === square);
+        }
+        return false;
     }
 
     return (
@@ -115,12 +124,12 @@ export default function Chessboard({ totalTurns, setTotalTurns }: Props) {
                 <h1>{totalTurns % 2 === 0 ? "White wins" : "Black wins"}</h1>
                 <button onClick={resetBoard}>Play again</button>
             </div>
-            {chessboardState.map((piece, i) => (
+            {SQUARES.map((square, i) => (
                 <Tile
                     key={i}
                     number={(i + Math.floor(i / 8)) % 2}
-                    image={piece ? `/pieces/${piece.color}${piece.type}.png` : undefined}
-                    highlight={false}
+                    image={chessboardState[i] ? `/pieces/${chessboardState[i].color}${chessboardState[i].type}.png` : undefined}
+                    highlight={isHighlighted(square)}
                 />
             ))}
         </div>
