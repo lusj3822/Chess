@@ -57,3 +57,25 @@ h3.active {
 h3.inactive {
     display: none;
 }
+
+.timer {
+    height: 50px;
+    width: 100px;
+    background: white;
+    border-radius: 5px;
+    display: flex;
+    flex-direction: column;
+    margin-left: 450px;
+    align-content: center;
+    justify-content: center;
+    position: absolute;
+}
+
+.time {
+    display: flex;
+    justify-content: center;
+    color: black;
+    font-size: xx-large;
+    font-weight: 500;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}

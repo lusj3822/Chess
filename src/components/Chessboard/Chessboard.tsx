@@ -6,31 +6,51 @@ import { Chess, Square, SQUARES } from 'chess.js';
 interface Props {
     currentTurn: 'w' | 'b';
     setCurrentTurn: React.Dispatch<React.SetStateAction<'w' | 'b'>>;
+    gameState: { checkmate: boolean, stalemate: boolean, draw: boolean, noTime: boolean };
+    setGameState: React.Dispatch<React.SetStateAction<{checkmate: boolean; stalemate: boolean; draw: boolean; noTime: boolean }>>;
+    setResetTime: React.Dispatch<React.SetStateAction<boolean>>;
 }
 
-export default function Chessboard({ currentTurn, setCurrentTurn }: Props) {
+export default function Chessboard({ currentTurn, setCurrentTurn, gameState, setGameState, setResetTime }: Props) {
     const chess = useRef(new Chess());
     const chessboardRef = useRef<HTMLDivElement>(null);
 
     const [activePiece, setActivePiece] = useState<HTMLElement | null>(null);
     const [grabSquare, setGrabSquare] = useState<string>("");
     const [chessboardState, setChessboardState] = useState(chess.current.board().flat());
-    const [checkmate, setCheckmate] = useState<boolean>(false);
 
     useEffect(() => {
         setChessboardState(chess.current.board().flat());
     }, [currentTurn]);
+
+    useEffect(() => {
+        const handleMouseUp = () => {
+            if (activePiece) {
+                activePiece.style.removeProperty('position');
+                activePiece.style.removeProperty('top');
+                activePiece.style.removeProperty('left');
+                setActivePiece(null);
+            }
+        };
+        document.addEventListener('mouseup', handleMouseUp);
+        
+        return () => {
+            document.removeEventListener('mouseup', handleMouseUp);
+        };
+    }, [activePiece]);
 
     function getPosition(x: number, y: number): string {
         const file = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h'][x];
         return `${file}${8 - y}`;
     }
 
-    function grabPiece(e: React.MouseEvent<HTMLDivElement, MouseEvent>) {
+    function grabPiece(e: React.MouseEvent<HTMLDivElement, MouseEvent>): void {
         const element = e.target as HTMLElement;
         const chessboard = chessboardRef.current;
+        const isGameOver = gameState.checkmate || gameState.stalemate || gameState.draw;
 
-        if (!checkmate && element.classList.contains('chess-piece') && chessboard) {
+        if (!isGameOver && element.classList.contains('chess-piece') && chessboard) {
+            if (activePiece) return;
             const x = Math.floor((e.clientX - chessboard.offsetLeft) / 75);
             const y = Math.floor((e.clientY - chessboard.offsetTop) / 75);
 
@@ -39,7 +59,7 @@ export default function Chessboard({ currentTurn, setCurrentTurn }: Props) {
         }
     }
 
-    function movePiece(e: React.MouseEvent<HTMLDivElement, MouseEvent>) {
+    function movePiece(e: React.MouseEvent<HTMLDivElement, MouseEvent>): void {
         if (activePiece && chessboardRef.current) {
             const size_of_half_piece = 37.5;
             const min_x = chessboardRef.current.offsetLeft - size_of_half_piece;
@@ -68,7 +88,7 @@ export default function Chessboard({ currentTurn, setCurrentTurn }: Props) {
         }
     }
 
-    function dropPiece(e: React.MouseEvent<HTMLDivElement, MouseEvent>) {
+    function dropPiece(e: React.MouseEvent<HTMLDivElement, MouseEvent>): void {
         const chessboard = chessboardRef.current;
         if (activePiece && chessboard) {
             const x = Math.floor((e.clientX - chessboard.offsetLeft) / 75);
@@ -82,9 +102,12 @@ export default function Chessboard({ currentTurn, setCurrentTurn }: Props) {
                     setCurrentTurn((turn) => turn === "w" ? "b" : "w");
                 }
 
-                if (chess.current.isCheckmate()) {
-                    setCheckmate(true);
-                }
+                setGameState({
+                    checkmate: chess.current.isCheckmate(),
+                    stalemate: chess.current.isStalemate(),
+                    draw: chess.current.isDraw(),
+                    noTime: false,
+                });
 
             } catch (error) {
                 activePiece.style.removeProperty('position');
@@ -97,11 +120,12 @@ export default function Chessboard({ currentTurn, setCurrentTurn }: Props) {
         }
     }
 
-    function resetBoard() {
+    function resetBoard(): void {
         chess.current = new Chess();
         setChessboardState(chess.current.board().flat());
         setCurrentTurn("w");
-        setCheckmate(false);
+        setGameState({checkmate: false, stalemate: false, draw: false, noTime: false});
+        setResetTime(true);
     }
 
     function isHighlighted(square: string): boolean {
@@ -120,10 +144,14 @@ export default function Chessboard({ currentTurn, setCurrentTurn }: Props) {
             onMouseUp={(e) => dropPiece(e)}
             ref={chessboardRef}
         >
-            <div className='game-over-screen' style={{display: checkmate ? 'block' : 'none'}}>
-                <h1>{currentTurn === "b" ? "White wins" : "Black wins"}</h1>
+            <div className="game-over-screen" style={{ display: gameState.checkmate || gameState.stalemate || gameState.draw || gameState.noTime ? 'block' : 'none' }}>
+                {gameState.checkmate && <h1>{currentTurn === "b" ? "White wins by checkmate" : "Black wins by checkmate"}</h1>}
+                {gameState.stalemate && <h1>Stalemate!</h1>}
+                {gameState.draw && <h1>Draw!</h1>}
+                {gameState.noTime && <h1>{currentTurn === "b" ? "White wins on time" : "Black wins on time"}</h1>}
                 <button onClick={resetBoard}>Play again</button>
             </div>
+
             {SQUARES.map((square, i) => (
                 <Tile
                     key={i}
