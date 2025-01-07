@@ -2,7 +2,20 @@ import { useEffect, useState } from "react";
 
 interface Props {
     active: boolean;
-    setGameState: React.Dispatch<React.SetStateAction<{ checkmate: boolean; stalemate: boolean; draw: boolean; noTime: boolean }>>;
+    gameState: { 
+        checkmate: boolean, 
+        stalemate: boolean, 
+        draw: boolean, 
+        noTime: boolean, 
+        ongoingGame: boolean 
+    };
+    setGameState: React.Dispatch<React.SetStateAction<{
+        checkmate: boolean; 
+        stalemate: boolean; 
+        draw: boolean; 
+        noTime: boolean; 
+        ongoingGame: boolean
+    }>>;
     resetTime: boolean;
     setResetTime: React.Dispatch<React.SetStateAction<boolean>>;
 }
@@ -12,7 +25,7 @@ export interface Time {
     seconds: number;
   }
 
-export default function Timer({active, setGameState, resetTime, setResetTime}: Props) {
+export default function Timer({active, gameState, setGameState, resetTime, setResetTime}: Props) {
     const [time, setTime] = useState<Time>({ minutes: 1, seconds: 0 });
     useEffect(() => {
         if (resetTime) {
@@ -23,7 +36,7 @@ export default function Timer({active, setGameState, resetTime, setResetTime}: P
     });
 
     useEffect(() => {
-        if (!active) return;
+        if (!active || !gameState.ongoingGame) return;
 
         const interval = setInterval(() => {
             setTime((prevTime) => {
@@ -50,6 +63,7 @@ export default function Timer({active, setGameState, resetTime, setResetTime}: P
                 stalemate: false,
                 draw: false,
                 noTime: true,
+                ongoingGame: false,
             });
         }
     }, [time, active, setGameState]);
@@ -60,7 +74,7 @@ export default function Timer({active, setGameState, resetTime, setResetTime}: P
     }
 
     return (
-        <div className="timer">
+        <div className="timer" style={{background: gameState.ongoingGame && active ? "green" : "white"}}>
             <div className="time">{formatTime()}</div>
         </div>
     );

@@ -11,19 +11,41 @@ function App() {
     stalemate: false,
     draw: false,
     noTime: false,
+    ongoingGame: false,
   });
   const [resetTime, setResetTime] = useState<boolean>(false);
+
+  const gameContext = {
+    currentTurn,
+    setCurrentTurn,
+    gameState,
+    setGameState,
+    resetTime,
+    setResetTime,
+  };
 
   let blackTurn = currentTurn === "b" ? "Your turn" : "";
   let whiteTurn = currentTurn === "w" ? "Your turn" : "";
 
+  const opponentPlayerData = {
+    image: "player-icons/cat.jpg",
+    userName: 'Opponent',
+    turnStatus: blackTurn,
+  };
+
+  const playerData = {
+    image: "player-icons/dog.png",
+    userName: 'Player',
+    turnStatus: whiteTurn,
+  };
+
   return (
     <div>
-      <Playerbar className='opponent-player-bar' image='dog.png' userName='Opponent' turnStatus={blackTurn} setGameState={setGameState} resetTime={resetTime} setResetTime={setResetTime}/>
-      <Chessboard currentTurn={currentTurn} setCurrentTurn={setCurrentTurn} gameState={gameState} setGameState={setGameState} setResetTime={setResetTime}/>
-      <Playerbar className='player-bar' image='cat.jpg' userName='Player' turnStatus={whiteTurn} setGameState={setGameState} resetTime={resetTime} setResetTime={setResetTime}/>
+      <Playerbar className="opponent-player-bar" playerData={opponentPlayerData} gameContext={gameContext} />
+      <Chessboard gameContext={gameContext} />
+      <Playerbar className="player-bar" playerData={playerData} gameContext={gameContext} />
     </div>
-  )
+  );
 }
 
 export default App

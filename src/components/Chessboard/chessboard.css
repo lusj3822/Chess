@@ -9,10 +9,12 @@
 }
 
 .game-over-screen {
-    background-color: rgba(0, 0, 0, 0.75);
+    background: #F0D8B7;
+    border: solid;
+    border-width: 5px;
+    border-color: #B48764;
     width: 300px;
     height: 200px;
-    border-radius: 10px;
     position: absolute;
     top: 50%;
     left: 50%;
@@ -26,21 +28,22 @@
 }
 
 h1 {
-    color: white;
+    color: black;
     margin: 0;
     text-align: center;
     margin-top: 40px;
+    font-family: monospace;
 }
 
 button {
     width: 100px;
     height: 40px;
     color: white;
-    border-radius: 5px;
+    font-family: monospace;
     background-color: #B48764;
     border: none;
     cursor: pointer;
     text-align: center;
     margin-top: 30px;
-    margin-left: 100px;
+    margin-left: 95px;
 }

@@ -28,8 +28,8 @@
 }
 
 h2 {
-    font-size: medium;
-    font-family: Arial, Helvetica, sans-serif;
+    font-size: x-large;
+    font-family: monospace;
     font-weight: 800;
 }
 
@@ -38,34 +38,22 @@ img {
     width: 50px;
     border-radius: 50%;
     object-fit: cover;
+    border: solid;
+    border-color: #B48764;
 }
 
 .component-a .player-bar {
     margin-top: -20px;
 }
 
-h3 {
-    font-size: medium;
-    font-family: Arial, Helvetica, sans-serif;
-    font-weight: 800;
-}
-
-h3.active {
-    color: green;
-}
-
-h3.inactive {
-    display: none;
-}
-
 .timer {
-    height: 50px;
-    width: 100px;
+    height: 40px;
+    width: 80px;
     background: white;
     border-radius: 5px;
     display: flex;
     flex-direction: column;
-    margin-left: 450px;
+    margin-left: 500px;
     align-content: center;
     justify-content: center;
     position: absolute;
@@ -75,7 +63,7 @@ h3.inactive {
     display: flex;
     justify-content: center;
     color: black;
-    font-size: xx-large;
+    font-size: x-large;
     font-weight: 500;
     font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
 }

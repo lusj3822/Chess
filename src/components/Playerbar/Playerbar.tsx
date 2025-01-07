@@ -3,23 +3,49 @@ import Timer from './Timer';
 
 interface Props {
     className: string;
-    image: string;
-    userName: string;
-    turnStatus: string;
-    setGameState: React.Dispatch<React.SetStateAction<{checkmate: boolean; stalemate: boolean; draw: boolean; noTime: boolean }>>;
-    resetTime: boolean;
-    setResetTime: React.Dispatch<React.SetStateAction<boolean>>;
+    
+    playerData: {
+        image: string,
+        userName: string,
+        turnStatus: string,
+    };
+
+    gameContext: {
+        currentTurn: 'w' | 'b';
+        setCurrentTurn: React.Dispatch<React.SetStateAction<'w' | 'b'>>;
+        gameState: { 
+            checkmate: boolean,
+            stalemate: boolean,
+            draw: boolean,
+            noTime: boolean,
+            ongoingGame: boolean
+        };
+        setGameState: React.Dispatch<React.SetStateAction<{
+            checkmate: boolean;
+            stalemate: boolean;
+            draw: boolean;
+            noTime: boolean;
+            ongoingGame: boolean
+        }>>;
+        resetTime: boolean;
+        setResetTime: React.Dispatch<React.SetStateAction<boolean>>;
+    };
 }
 
-export default function Playerbar({className, image, userName, turnStatus, setGameState, resetTime, setResetTime}: Props) {
+export default function Playerbar({className, playerData, gameContext}: Props) {
 
     return (
         <div className={`${className}`}>
             <div className='user-info'>
-                <img src={`${image}`}></img>
-                <h2>{`${userName}`}</h2>
-                <h3 className={turnStatus === "Your turn" ? "active" : "inactive"}>{`${turnStatus}`}</h3>
-                <Timer active={turnStatus === "Your turn"} setGameState={setGameState} resetTime={resetTime} setResetTime={setResetTime}/>
+                <img src={`${playerData.image}`}></img>
+                <h2>{`${playerData.userName}`}</h2>
+                <Timer
+                    active={playerData.turnStatus === "Your turn"} 
+                    gameState={gameContext.gameState} 
+                    setGameState={gameContext.setGameState} 
+                    resetTime={gameContext.resetTime} 
+                    setResetTime={gameContext.setResetTime}
+                />
             </div>
         </div>
     )
