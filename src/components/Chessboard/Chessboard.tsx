@@ -3,8 +3,8 @@ import Tile from '../Tile/Tile';
 import { useRef, useState, useEffect } from 'react';
 import { Chess, Square, SQUARES } from 'chess.js';
 import { PlayerData } from "../../App";
-import moveSound from "../../../public/audio/move.mp3";
-import captureSound from "../../../public/audio/capture.mp3";
+import moveSound from "/audio/move.mp3";
+import captureSound from "/audio/capture.mp3";
 
 interface Props {
     gameContext: {
