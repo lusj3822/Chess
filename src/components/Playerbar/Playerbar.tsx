@@ -1,15 +1,10 @@
 import './playerbar.css';
 import Timer from './Timer';
+import { PlayerData } from '../../App';
 
 interface Props {
     className: string;
-    
-    playerData: {
-        image: string,
-        userName: string,
-        turnStatus: string,
-    };
-
+    playerData: PlayerData;
     gameContext: {
         currentTurn: 'w' | 'b';
         setCurrentTurn: React.Dispatch<React.SetStateAction<'w' | 'b'>>;
@@ -40,7 +35,8 @@ export default function Playerbar({className, playerData, gameContext}: Props) {
                 <img src={`${playerData.image}`}></img>
                 <h2>{`${playerData.userName}`}</h2>
                 <Timer
-                    active={playerData.turnStatus === "Your turn"} 
+                    active={playerData.turnStatus === "Your turn"}
+                    playerData={playerData} 
                     gameState={gameContext.gameState} 
                     setGameState={gameContext.setGameState} 
                     resetTime={gameContext.resetTime} 

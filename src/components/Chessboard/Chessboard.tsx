@@ -2,6 +2,9 @@ import './chessboard.css';
 import Tile from '../Tile/Tile';
 import { useRef, useState, useEffect } from 'react';
 import { Chess, Square, SQUARES } from 'chess.js';
+import { PlayerData } from "../../App";
+import moveSound from "../../../public/audio/move.mp3";
+import captureSound from "../../../public/audio/capture.mp3";
 
 interface Props {
     gameContext: {
@@ -24,9 +27,11 @@ interface Props {
         resetTime: boolean;
         setResetTime: React.Dispatch<React.SetStateAction<boolean>>;
       };
+    opponentPlayerData: PlayerData;
+    playerData: PlayerData;
 }
 
-export default function Chessboard({ gameContext }: Props) {
+export default function Chessboard({ gameContext, opponentPlayerData, playerData }: Props) {
     const chess = useRef(new Chess());
     const chessboardRef = useRef<HTMLDivElement>(null);
 
@@ -106,6 +111,38 @@ export default function Chessboard({ gameContext }: Props) {
         }
     }
 
+    function incrementPlayerTime() {
+        if (gameContext.gameState.ongoingGame) {
+            if (playerData.turnStatus === "Your turn") {
+                let newSeconds = playerData.time.seconds + 3;
+        
+                if (newSeconds >= 60) {
+                    const extraMinutes = Math.floor(newSeconds / 60);
+                    newSeconds = newSeconds % 60;
+                    const newMinutes = playerData.time.minutes + extraMinutes;
+                    playerData.setTime({minutes: newMinutes, seconds: newSeconds});
+                } else {
+                    playerData.setTime({minutes: playerData.time.minutes, seconds: newSeconds});
+                }
+        
+            } else if (opponentPlayerData.turnStatus === "Your turn") {
+                let newSeconds = opponentPlayerData.time.seconds + 3;
+        
+                if (newSeconds >= 60) {
+                    const extraMinutes = Math.floor(newSeconds / 60);
+                    newSeconds = newSeconds % 60;
+                    const newMinutes = opponentPlayerData.time.minutes + extraMinutes;
+                    opponentPlayerData.setTime({minutes: newMinutes, seconds: newSeconds});
+                } else {
+                    opponentPlayerData.setTime({minutes: opponentPlayerData.time.minutes, seconds: newSeconds});
+                }
+            }
+        }
+    }
+
+    const moveAudio = new Audio(moveSound);
+    const captureAudio = new Audio(captureSound);
+
     function dropPiece(e: React.MouseEvent<HTMLDivElement, MouseEvent>): void {
         const chessboard = chessboardRef.current;
         if (activePiece && chessboard) {
@@ -128,6 +165,9 @@ export default function Chessboard({ gameContext }: Props) {
                     ongoingGame: true,
                 });
 
+                incrementPlayerTime();
+                move.captured ? captureAudio.play() : moveAudio.play();
+                
             } catch (error) {
                 activePiece.style.removeProperty('position');
                 activePiece.style.removeProperty('top');
@@ -184,6 +224,8 @@ export default function Chessboard({ gameContext }: Props) {
                     number={(i + Math.floor(i / 8)) % 2}
                     image={chessboardState[i] ? `/pieces/${chessboardState[i].color}${chessboardState[i].type}.png` : undefined}
                     highlight={isHighlighted(square)}
+                    check={chess.current.inCheck()}
+                    currentTurn={gameContext.currentTurn}
                 />
             ))}
         </div>

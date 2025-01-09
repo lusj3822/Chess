@@ -1,7 +1,9 @@
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
+import { PlayerData } from "../../App";
 
 interface Props {
     active: boolean;
+    playerData: PlayerData;
     gameState: { 
         checkmate: boolean, 
         stalemate: boolean, 
@@ -20,26 +22,20 @@ interface Props {
     setResetTime: React.Dispatch<React.SetStateAction<boolean>>;
 }
 
-export interface Time {
-    minutes: number;
-    seconds: number;
-  }
-
-export default function Timer({active, gameState, setGameState, resetTime, setResetTime}: Props) {
-    const [time, setTime] = useState<Time>({ minutes: 1, seconds: 0 });
+export default function Timer({active, playerData, gameState, setGameState, resetTime, setResetTime}: Props) {
     useEffect(() => {
         if (resetTime) {
             setResetTime(false);
-            setTime({ minutes: 1, seconds: 0 });
+            playerData.setTime({ minutes: 1, seconds: 0 });
             return;
         }
     });
 
     useEffect(() => {
-        if (!active || !gameState.ongoingGame) return;
+        if (!active || !gameState.ongoingGame || gameState.checkmate || gameState.stalemate || gameState.draw || gameState.noTime) return;
 
         const interval = setInterval(() => {
-            setTime((prevTime) => {
+            playerData.setTime((prevTime) => {
                 const { minutes, seconds } = prevTime;
 
                 if (seconds === 0) {
@@ -57,7 +53,7 @@ export default function Timer({active, gameState, setGameState, resetTime, setRe
     }, [active]);
 
     useEffect(() => {
-        if (time.minutes === 0 && time.seconds === 0 && active) {
+        if (playerData.time.minutes === 0 && playerData.time.seconds === 0 && active) {
             setGameState({
                 checkmate: false,
                 stalemate: false,
@@ -66,10 +62,10 @@ export default function Timer({active, gameState, setGameState, resetTime, setRe
                 ongoingGame: false,
             });
         }
-    }, [time, active, setGameState]);
+    }, [playerData.time, active, setGameState]);
 
     function formatTime(): string {
-        const { minutes, seconds } = time;
+        const { minutes, seconds } = playerData.time;
         return seconds < 10 ? `${minutes} : 0${seconds}` : `${minutes} : ${seconds}`;
     }
 
