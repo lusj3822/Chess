@@ -1,23 +1,12 @@
 import { useEffect } from "react";
 import { PlayerData } from "../../App";
+import { GameState } from "../../interfaces";
 
 interface Props {
     active: boolean;
     playerData: PlayerData;
-    gameState: { 
-        checkmate: boolean, 
-        stalemate: boolean, 
-        draw: boolean, 
-        noTime: boolean, 
-        ongoingGame: boolean 
-    };
-    setGameState: React.Dispatch<React.SetStateAction<{
-        checkmate: boolean; 
-        stalemate: boolean; 
-        draw: boolean; 
-        noTime: boolean; 
-        ongoingGame: boolean
-    }>>;
+    gameState: GameState;
+    setGameState: React.Dispatch<React.SetStateAction<GameState>>;
     resetTime: boolean;
     setResetTime: React.Dispatch<React.SetStateAction<boolean>>;
 }
@@ -60,6 +49,7 @@ export default function Timer({active, playerData, gameState, setGameState, rese
                 draw: false,
                 noTime: true,
                 ongoingGame: false,
+                currentTurn: gameState.currentTurn,
             });
         }
     }, [playerData.time, active, setGameState]);

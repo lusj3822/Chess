@@ -1,30 +1,12 @@
 import './playerbar.css';
 import Timer from './Timer';
 import { PlayerData } from '../../App';
+import { GameContext} from '../../interfaces';
 
 interface Props {
     className: string;
     playerData: PlayerData;
-    gameContext: {
-        currentTurn: 'w' | 'b';
-        setCurrentTurn: React.Dispatch<React.SetStateAction<'w' | 'b'>>;
-        gameState: { 
-            checkmate: boolean,
-            stalemate: boolean,
-            draw: boolean,
-            noTime: boolean,
-            ongoingGame: boolean
-        };
-        setGameState: React.Dispatch<React.SetStateAction<{
-            checkmate: boolean;
-            stalemate: boolean;
-            draw: boolean;
-            noTime: boolean;
-            ongoingGame: boolean
-        }>>;
-        resetTime: boolean;
-        setResetTime: React.Dispatch<React.SetStateAction<boolean>>;
-    };
+    gameContext: GameContext;
 }
 
 export default function Playerbar({className, playerData, gameContext}: Props) {

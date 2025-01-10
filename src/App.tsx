@@ -3,6 +3,8 @@ import './App.css';
 import Chessboard from './components/Chessboard/Chessboard';
 import Playerbar from './components/Playerbar/Playerbar';
 import { useState } from 'react';
+import { SocketContext, socket } from './socket';
+import { GameState } from './interfaces';
 
 interface Time {
   minutes: number;
@@ -18,19 +20,17 @@ export interface PlayerData {
 }
 
 function App() {
-  const [currentTurn, setCurrentTurn] = useState<'w' | 'b'>('w');
-  const [gameState, setGameState] = useState({
+  const [gameState, setGameState] = useState<GameState>({
     checkmate: false,
     stalemate: false,
     draw: false,
     noTime: false,
     ongoingGame: false,
+    currentTurn: 'w',
   });
   const [resetTime, setResetTime] = useState<boolean>(false);
 
   const gameContext = {
-    currentTurn,
-    setCurrentTurn,
     gameState,
     setGameState,
     resetTime,
@@ -40,13 +40,10 @@ function App() {
   const [playerTime, setPlayerTime] = useState<Time>({ minutes: 1, seconds: 0 });
   const [opponentPlayerTime, setOpponentPlayerTime] = useState<Time>({ minutes: 1, seconds: 0 });
 
-  let blackTurn = currentTurn === "b" ? "Your turn" : "";
-  let whiteTurn = currentTurn === "w" ? "Your turn" : "";
-
   const opponentPlayerData: PlayerData = {
     image: "player-icons/cat.jpg",
     userName: 'Opponent',
-    turnStatus: blackTurn,
+    turnStatus: gameContext.gameState.currentTurn === 'b' ? "Your turn" : "",
     time: opponentPlayerTime,
     setTime: setOpponentPlayerTime,
   };
@@ -54,17 +51,19 @@ function App() {
   const playerData: PlayerData = {
     image: "player-icons/dog.png",
     userName: 'Player',
-    turnStatus: whiteTurn,
+    turnStatus: gameContext.gameState.currentTurn === 'w' ? "Your turn" : "",
     time: playerTime,
     setTime: setPlayerTime,
   };
 
   return (
-    <div>
-      <Playerbar className="opponent-player-bar" playerData={opponentPlayerData} gameContext={gameContext} />
-      <Chessboard gameContext={gameContext} opponentPlayerData={opponentPlayerData} playerData={playerData}/>
-      <Playerbar className="player-bar" playerData={playerData} gameContext={gameContext} />
-    </div>
+    <SocketContext.Provider value={socket}>
+      <div>
+        <Playerbar className="opponent-player-bar" playerData={opponentPlayerData} gameContext={gameContext} />
+        <Chessboard gameContext={gameContext} opponentPlayerData={opponentPlayerData} playerData={playerData}/>
+        <Playerbar className="player-bar" playerData={playerData} gameContext={gameContext} />
+      </div>
+    </SocketContext.Provider>
   );
 }
 

@@ -5,28 +5,11 @@ import { Chess, Square, SQUARES } from 'chess.js';
 import { PlayerData } from "../../App";
 import moveSound from "/audio/move.mp3";
 import captureSound from "/audio/capture.mp3";
+import { socket, SocketContext } from '../../socket';
+import { GameContext } from '../../interfaces';
 
 interface Props {
-    gameContext: {
-        currentTurn: 'w' | 'b';
-        setCurrentTurn: React.Dispatch<React.SetStateAction<'w' | 'b'>>;
-        gameState: { 
-            checkmate: boolean, 
-            stalemate: boolean, 
-            draw: boolean, 
-            noTime: boolean, 
-            ongoingGame: boolean
-        };
-        setGameState: React.Dispatch<React.SetStateAction<{
-            checkmate: boolean; 
-            stalemate: boolean; 
-            draw: boolean; 
-            noTime: boolean, 
-            ongoingGame: boolean
-        }>>;
-        resetTime: boolean;
-        setResetTime: React.Dispatch<React.SetStateAction<boolean>>;
-      };
+    gameContext: GameContext;
     opponentPlayerData: PlayerData;
     playerData: PlayerData;
 }
@@ -41,7 +24,7 @@ export default function Chessboard({ gameContext, opponentPlayerData, playerData
 
     useEffect(() => {
         setChessboardState(chess.current.board().flat());
-    }, [gameContext.currentTurn]);
+    }, [gameContext.gameState.currentTurn]);
 
     useEffect(() => {
         const handleMouseUp = () => {
@@ -152,17 +135,13 @@ export default function Chessboard({ gameContext, opponentPlayerData, playerData
 
             try {
                 const move = chess.current.move({ from: grabSquare, to: targetSquare });
-
-                if (move) {
-                    gameContext.setCurrentTurn((turn) => turn === "w" ? "b" : "w");
-                }
-
                 gameContext.setGameState({
                     checkmate: chess.current.isCheckmate(),
                     stalemate: chess.current.isStalemate(),
                     draw: chess.current.isDraw(),
                     noTime: false,
                     ongoingGame: true,
+                    currentTurn: chess.current.turn(),
                 });
 
                 incrementPlayerTime();
@@ -182,8 +161,7 @@ export default function Chessboard({ gameContext, opponentPlayerData, playerData
     function resetBoard(): void {
         chess.current = new Chess();
         setChessboardState(chess.current.board().flat());
-        gameContext.setCurrentTurn("w");
-        gameContext.setGameState({checkmate: false, stalemate: false, draw: false, noTime: false, ongoingGame: false});
+        gameContext.setGameState({checkmate: false, stalemate: false, draw: false, noTime: false, ongoingGame: false, currentTurn: 'w'});
         gameContext.setResetTime(true);
     }
 
@@ -211,10 +189,10 @@ export default function Chessboard({ gameContext, opponentPlayerData, playerData
                     gameContext.gameState.draw ||
                     gameContext.gameState.noTime ? 'block' : 'none'
                 }}>
-                {gameContext.gameState.checkmate && <h1>{gameContext.currentTurn === "b" ? "White wins by checkmate" : "Black wins by checkmate"}</h1>}
+                {gameContext.gameState.checkmate && <h1>{gameContext.gameState.currentTurn === "b" ? "White wins by checkmate" : "Black wins by checkmate"}</h1>}
                 {gameContext.gameState.stalemate && <h1>Stalemate!</h1>}
                 {gameContext.gameState.draw && <h1>Draw!</h1>}
-                {gameContext.gameState.noTime && <h1>{gameContext.currentTurn === "b" ? "White wins on time" : "Black wins on time"}</h1>}
+                {gameContext.gameState.noTime && <h1>{gameContext.gameState.currentTurn === "b" ? "White wins on time" : "Black wins on time"}</h1>}
                 <button onClick={resetBoard}>Play again</button>
             </div>
 
@@ -225,7 +203,7 @@ export default function Chessboard({ gameContext, opponentPlayerData, playerData
                     image={chessboardState[i] ? `/pieces/${chessboardState[i].color}${chessboardState[i].type}.png` : undefined}
                     highlight={isHighlighted(square)}
                     check={chess.current.inCheck()}
-                    currentTurn={gameContext.currentTurn}
+                    currentTurn={gameContext.gameState.currentTurn}
                 />
             ))}
         </div>
