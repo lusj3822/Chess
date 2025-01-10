@@ -9,26 +9,24 @@
 }
 
 .game-over-screen {
-    background: #F0D8B7;
-    border: solid;
-    border-width: 5px;
-    border-color: #B48764;
+    border-radius: 5px;
     width: 300px;
     height: 200px;
     position: absolute;
     top: 50%;
     left: 50%;
     transform: translate(-50%, -50%);
-    z-index: 7;
+    z-index: 15;
     display: flex;
     flex-direction: column;
     justify-content: center;
     align-items: center;
     display: none;
+    background-color: rgba(25, 25, 25, 0.75);
 }
 
 h1 {
-    color: black;
+    color: white;
     margin: 0;
     text-align: center;
     margin-top: 40px;
@@ -40,10 +38,10 @@ button {
     height: 40px;
     color: white;
     font-family: monospace;
-    background-color: #B48764;
+    background-color: transparent;
     border: none;
     cursor: pointer;
     text-align: center;
     margin-top: 30px;
-    margin-left: 95px;
+    margin-left: 34.5%;
 }

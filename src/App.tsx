@@ -40,7 +40,7 @@ function App() {
   const [opponentPlayerTime, setOpponentPlayerTime] = useState<Time>({ minutes: 1, seconds: 0 });
 
   const opponentPlayerData: PlayerData = {
-    image: "player-icons/cat.jpg",
+    image: "player-icons/opponent.png",
     userName: 'Opponent',
     turnStatus: gameContext.gameState.currentTurn === 'b' ? "Your turn" : "",
     time: opponentPlayerTime,
@@ -48,7 +48,7 @@ function App() {
   };
 
   const playerData: PlayerData = {
-    image: "player-icons/dog.png",
+    image: "player-icons/player.png",
     userName: 'Player',
     turnStatus: gameContext.gameState.currentTurn === 'w' ? "Your turn" : "",
     time: playerTime,

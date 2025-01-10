@@ -38,8 +38,6 @@ img {
     width: 50px;
     border-radius: 50%;
     object-fit: cover;
-    border: solid;
-    border-color: #B48764;
 }
 
 .component-a .player-bar {

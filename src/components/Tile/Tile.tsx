@@ -6,9 +6,10 @@ interface Props {
     highlight: boolean;
     check: boolean;
     currentTurn: 'w' | 'b';
+    color: 'w' | 'b' | null;
 }
 
-export default function Tile({number, image, highlight, check, currentTurn}: Props) {
+export default function Tile({number, image, highlight, check, currentTurn, color}: Props) {
 
     let king;
     currentTurn === 'w' ? king = image === `/pieces/wk.png` : king = image === `/pieces/bk.png`
@@ -21,6 +22,6 @@ export default function Tile({number, image, highlight, check, currentTurn}: Pro
  
         return (
             <div className={className} style={{backgroundColor: king && check ? 'red' : ''}}>
-                {image && <div className='chess-piece' style={{backgroundImage: `url(${image})`}}></div>}
+                {image && <div className={color === 'w' ? "chess-piece-white" : "chess-piece-black"} style={{backgroundImage: `url(${image})`}}></div>}
             </div>);
 }

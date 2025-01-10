@@ -13,6 +13,17 @@ interface Props {
     playerData: PlayerData;
 }
 
+async function postChessApi(data = {}) {
+    const response = await fetch("https://chess-api.com/v1", {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json"
+        },
+        body: JSON.stringify(data),
+    });
+    return response.json();
+}
+
 export default function Chessboard({ gameContext, opponentPlayerData, playerData }: Props) {
     const chess = useRef(new Chess());
     const chessboardRef = useRef<HTMLDivElement>(null);
@@ -21,8 +32,45 @@ export default function Chessboard({ gameContext, opponentPlayerData, playerData
     const [grabSquare, setGrabSquare] = useState<string>("");
     const [chessboardState, setChessboardState] = useState(chess.current.board().flat());
 
+    async function blackMove() {
+        try {
+            const data = await postChessApi({ fen: chess.current.fen() });
+            const move = chess.current.move({ from: data.from, to: data.to });
+            gameContext.setGameState({
+                checkmate: chess.current.isCheckmate(),
+                stalemate: chess.current.isStalemate(),
+                draw: chess.current.isDraw(),
+                noTime: false,
+                ongoingGame: true,
+                currentTurn: chess.current.turn(),
+            });
+            incrementPlayerTime();
+            move.captured ? captureAudio.play() : moveAudio.play();
+        } catch (error) {
+            console.log(error);
+            const moves = chess.current.moves()
+            const choosenMove = moves[Math.floor(Math.random() * moves.length)]
+            const move = chess.current.move(choosenMove)
+            gameContext.setGameState({
+                checkmate: chess.current.isCheckmate(),
+                stalemate: chess.current.isStalemate(),
+                draw: chess.current.isDraw(),
+                noTime: false,
+                ongoingGame: true,
+                currentTurn: chess.current.turn(),
+            });
+            incrementPlayerTime();
+            move.captured ? captureAudio.play() : moveAudio.play();
+        }
+    }
+    
     useEffect(() => {
         setChessboardState(chess.current.board().flat());
+        if (gameContext.gameState.currentTurn === 'b') {
+            setTimeout(() => {
+                blackMove();
+            }, 1000);
+        }
     }, [gameContext.gameState.currentTurn]);
 
     useEffect(() => {
@@ -54,7 +102,7 @@ export default function Chessboard({ gameContext, opponentPlayerData, playerData
                            gameContext.gameState.draw ||
                            gameContext.gameState.noTime;
 
-        if (!isGameOver && element.classList.contains('chess-piece') && chessboard) {
+        if (!isGameOver && element.classList.contains('chess-piece-white') && chessboard) {
             if (activePiece) return;
             const x = Math.floor((e.clientX - chessboard.offsetLeft) / 75);
             const y = Math.floor((e.clientY - chessboard.offsetTop) / 75);
@@ -74,6 +122,8 @@ export default function Chessboard({ gameContext, opponentPlayerData, playerData
 
             const x = e.clientX - 40;
             const y = e.clientY - 50;
+
+            activePiece.style.zIndex = '10';
 
             if (x < min_x) {
                 activePiece.style.left = `${min_x}px`;
@@ -203,6 +253,7 @@ export default function Chessboard({ gameContext, opponentPlayerData, playerData
                     highlight={isHighlighted(square)}
                     check={chess.current.inCheck()}
                     currentTurn={gameContext.gameState.currentTurn}
+                    color={chessboardState[i] ? chessboardState[i].color : null}
                 />
             ))}
         </div>
