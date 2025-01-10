@@ -36,8 +36,8 @@ function App() {
     setResetTime,
   };
 
-  const [playerTime, setPlayerTime] = useState<Time>({ minutes: 1, seconds: 0 });
-  const [opponentPlayerTime, setOpponentPlayerTime] = useState<Time>({ minutes: 1, seconds: 0 });
+  const [playerTime, setPlayerTime] = useState<Time>({ minutes: 5, seconds: 0 });
+  const [opponentPlayerTime, setOpponentPlayerTime] = useState<Time>({ minutes: 5, seconds: 0 });
 
   const opponentPlayerData: PlayerData = {
     image: "player-icons/opponent.png",
