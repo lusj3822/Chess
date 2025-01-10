@@ -1,13 +1,11 @@
 import './chessboard.css';
 import Tile from '../Tile/Tile';
-import { useRef, useState, useEffect, useContext } from 'react';
+import { useRef, useState, useEffect } from 'react';
 import { Chess, Square, SQUARES } from 'chess.js';
 import { PlayerData } from "../../App";
 import moveSound from "/audio/move.mp3";
 import captureSound from "/audio/capture.mp3";
-import { SocketContext } from '../../socket';
 import { GameContext } from '../../interfaces';
-import { GameState } from '../../interfaces';
 
 interface Props {
     gameContext: GameContext;
@@ -23,16 +21,9 @@ export default function Chessboard({ gameContext, opponentPlayerData, playerData
     const [grabSquare, setGrabSquare] = useState<string>("");
     const [chessboardState, setChessboardState] = useState(chess.current.board().flat());
 
-    const socket = useContext(SocketContext);
-
     useEffect(() => {
-        socket.on('game-state', ({ board, fen, gameState }: { board: any[][]; fen: string; gameState: GameState }) => {
-            console.log("Game state changed");
-            chess.current.load(fen);
-            setChessboardState(board.flat());
-            gameContext.setGameState(gameState);
-        })
-    }, []);
+        setChessboardState(chess.current.board().flat());
+    }, [gameContext.gameState.currentTurn]);
 
     useEffect(() => {
         const handleMouseUp = () => {
@@ -143,11 +134,13 @@ export default function Chessboard({ gameContext, opponentPlayerData, playerData
 
             try {
                 const move = chess.current.move({ from: grabSquare, to: targetSquare });
-
-                socket.emit('move-piece', { from: grabSquare, to: targetSquare }, (response: any) => {
-                    if (response.success) {
-                        socket.emit('game-state', response.gameState);
-                    }
+                gameContext.setGameState({
+                    checkmate: chess.current.isCheckmate(),
+                    stalemate: chess.current.isStalemate(),
+                    draw: chess.current.isDraw(),
+                    noTime: false,
+                    ongoingGame: true,
+                    currentTurn: chess.current.turn(),
                 });
 
                 incrementPlayerTime();
