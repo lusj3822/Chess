@@ -3,7 +3,6 @@ import './App.css';
 import Chessboard from './components/Chessboard/Chessboard';
 import Playerbar from './components/Playerbar/Playerbar';
 import { useState } from 'react';
-import { SocketContext, socket } from './socket';
 import { GameState } from './interfaces';
 
 interface Time {
@@ -57,13 +56,11 @@ function App() {
   };
 
   return (
-    <SocketContext.Provider value={socket}>
-      <div>
-        <Playerbar className="opponent-player-bar" playerData={opponentPlayerData} gameContext={gameContext} />
-        <Chessboard gameContext={gameContext} opponentPlayerData={opponentPlayerData} playerData={playerData}/>
-        <Playerbar className="player-bar" playerData={playerData} gameContext={gameContext} />
-      </div>
-    </SocketContext.Provider>
+    <div>
+      <Playerbar className="opponent-player-bar" playerData={opponentPlayerData} gameContext={gameContext} />
+      <Chessboard gameContext={gameContext} opponentPlayerData={opponentPlayerData} playerData={playerData}/>
+      <Playerbar className="player-bar" playerData={playerData} gameContext={gameContext} />
+    </div>
   );
 }
 

@@ -5,7 +5,6 @@ import { Chess, Square, SQUARES } from 'chess.js';
 import { PlayerData } from "../../App";
 import moveSound from "/audio/move.mp3";
 import captureSound from "/audio/capture.mp3";
-import { socket, SocketContext } from '../../socket';
 import { GameContext } from '../../interfaces';
 
 interface Props {
