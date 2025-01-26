@@ -11,5 +11,6 @@ Follow these steps to set up and run the application:
    npm run dev
    ```
 Open http://localhost:5173/ in your browser to play
-  
-![demo](https://github.com/user-attachments/assets/a4a31d1f-81c8-41fb-9633-f80cb0c41197)
+
+![image](https://github.com/user-attachments/assets/0a20569f-8f00-4821-853a-350c9b10033a)
+
