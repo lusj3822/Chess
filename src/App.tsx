@@ -48,7 +48,7 @@ function App() {
   };
 
   const playerData: PlayerData = {
-    image: "player-icons/player.png",
+    image: "player-icons/player.jpg",
     userName: 'Player',
     turnStatus: gameContext.gameState.currentTurn === 'w' ? "Your turn" : "",
     time: playerTime,
