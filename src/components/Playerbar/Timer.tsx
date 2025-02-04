@@ -1,6 +1,5 @@
 import { useEffect } from "react";
-import { PlayerData } from "../../App";
-import { GameState } from "../../interfaces";
+import { GameState, PlayerData } from "../../interfaces";
 
 interface Props {
     active: boolean;
@@ -15,7 +14,7 @@ export default function Timer({active, playerData, gameState, setGameState, rese
     useEffect(() => {
         if (resetTime) {
             setResetTime(false);
-            playerData.setTime({ minutes: 1, seconds: 0 });
+            playerData.setTime({ minutes: 5, seconds: 0 });
             return;
         }
     });
@@ -56,11 +55,11 @@ export default function Timer({active, playerData, gameState, setGameState, rese
 
     function formatTime(): string {
         const { minutes, seconds } = playerData.time;
-        return seconds < 10 ? `${minutes} : 0${seconds}` : `${minutes} : ${seconds}`;
+        return seconds < 10 ? `${minutes}:0${seconds}` : `${minutes}:${seconds}`;
     }
 
     return (
-        <div className="timer" style={{background: gameState.ongoingGame && active ? "green" : "white"}}>
+        <div className="timer" style={{background: gameState.ongoingGame && active ? "#1CAC78" : "white"}}>
             <div className="time">{formatTime()}</div>
         </div>
     );

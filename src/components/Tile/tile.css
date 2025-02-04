@@ -38,6 +38,7 @@
     background-repeat: no-repeat;
     background-position: center;
     background-size: 75px;
+    cursor: grab;
     position: absolute;
 }
 

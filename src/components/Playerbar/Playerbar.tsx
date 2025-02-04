@@ -1,7 +1,6 @@
 import './playerbar.css';
 import Timer from './Timer';
-import { PlayerData } from '../../App';
-import { GameContext} from '../../interfaces';
+import { GameContext, PlayerData} from '../../interfaces';
 
 interface Props {
     className: string;
@@ -17,7 +16,7 @@ export default function Playerbar({className, playerData, gameContext}: Props) {
                 <img src={`${playerData.image}`}></img>
                 <h2>{`${playerData.userName}`}</h2>
                 <Timer
-                    active={playerData.turnStatus === "Your turn"}
+                    active={gameContext.gameState.ongoingGame && playerData.turnStatus === "Your turn"}
                     playerData={playerData} 
                     gameState={gameContext.gameState} 
                     setGameState={gameContext.setGameState} 

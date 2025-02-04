@@ -21,16 +21,15 @@
     flex-direction: column;
     justify-content: center;
     align-items: center;
-    display: none;
-    background-color: rgba(25, 25, 25, 0.75);
+    background: transparent;
 }
 
 h1 {
     color: white;
     margin: 0;
     text-align: center;
-    margin-top: 40px;
     font-family: monospace;
+    margin-top: -80px;
 }
 
 button {
@@ -38,10 +37,26 @@ button {
     height: 40px;
     color: white;
     font-family: monospace;
-    background-color: transparent;
+    background-color: #7CB9E8;
     border: none;
     cursor: pointer;
     text-align: center;
-    margin-top: 30px;
+    margin-top: 100px;
     margin-left: 34%;
+    border-radius: 5px;
+}
+
+.reset-button {
+    position: absolute;
+    width: 60px;
+    height: 30px;
+    margin-top: 635px;
+    margin-left: 430px;
+    background-color: #7CB9E8;
+    font-weight: 800;
+    font-size: large;
+    border-radius: 5px;
+    cursor: pointer;
+    z-index: 10000;
+    font-family: monospace;
 }

@@ -1,0 +1,32 @@
+.navbar {
+    background-color: rgba(25, 25, 25, 0.75);
+    backdrop-filter: blur(19px) saturate(180%);
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    z-index: 1000;
+    height: 50px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.play-buttons {
+    color: white;
+    text-decoration: none;
+    padding: 15px 20px;
+    font-size: medium;
+    border: none;
+    background: transparent;
+    cursor: pointer;
+    margin: 0 10px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: 130px;
+}
+
+.play-buttons:hover {
+    background-color: hsl(0, 0%, 15%);
+}
