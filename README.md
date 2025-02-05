@@ -1,6 +1,6 @@
 # Chess
 
-A web-based chess game built using React, TypeScript, Chess.js for move generation/validation, and Chess-API as the chess engine.
+A web-based chess game built using React, TypeScript, Socket.IO, Chess.js and Chess-API.
 
 Follow these steps to set up and run the application:
 
@@ -8,9 +8,11 @@ Follow these steps to set up and run the application:
    git clone https://github.com/lusj3822/Chess.git
    cd Chess
    npm install
+   npm run server
    npm run dev
    ```
 Open http://localhost:5173/ in your browser to play
 
-![image](https://github.com/user-attachments/assets/0a20569f-8f00-4821-853a-350c9b10033a)
 
+
+![Chess2](https://github.com/user-attachments/assets/8ec7e751-5ce9-4a94-b9f7-34368f610c7b)
