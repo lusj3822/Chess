@@ -29,8 +29,8 @@
 
 h2 {
     font-size: large;
-    font-family: monospace;
-    font-weight: 800;
+    font-family: system-ui, "Segoe UI", Roboto, Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol";
+    font-weight: 500;
     margin-top: -20px;
 }
 
@@ -62,5 +62,5 @@ img {
     justify-content: center;
     color: black;
     font-size: xx-large;
-    font-family: monospace;
+    font-family: system-ui, "Segoe UI", Roboto, Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol";
 }

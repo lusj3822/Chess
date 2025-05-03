@@ -28,7 +28,7 @@ h1 {
     color: white;
     margin: 0;
     text-align: center;
-    font-family: monospace;
+    font-family: system-ui, "Segoe UI", Roboto, Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol";
     margin-top: -80px;
 }
 
@@ -36,27 +36,27 @@ button {
     width: 100px;
     height: 40px;
     color: white;
-    font-family: monospace;
+    font-family: system-ui, "Segoe UI", Roboto, Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol";
     background-color: #7CB9E8;
     border: none;
     cursor: pointer;
     text-align: center;
-    margin-top: 100px;
+    margin-top: 150px;
     margin-left: 34%;
     border-radius: 5px;
 }
 
 .reset-button {
     position: absolute;
-    width: 60px;
-    height: 30px;
-    margin-top: 635px;
-    margin-left: 430px;
+    height: 40px;
+    width: 80px;
+    margin-top: 630px;
+    margin-left: 400px;
     background-color: #7CB9E8;
-    font-weight: 800;
+    font-weight: 500;
     font-size: large;
     border-radius: 5px;
     cursor: pointer;
-    z-index: 10000;
-    font-family: monospace;
+    z-index: 10;
+    font-family: system-ui, "Segoe UI", Roboto, Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol";
 }
