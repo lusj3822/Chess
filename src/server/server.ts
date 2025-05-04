@@ -200,6 +200,8 @@ io.on('connection', (socket) => {
             },
             resetTime: true,
         });
+
+        io.to(roomName).emit('user-disconnected');
     });
 });
 

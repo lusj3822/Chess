@@ -37,6 +37,11 @@ function App() {
     socket.on('start-game', () => {
       setStartGame(true);
     })
+
+    socket.on('user-disconnected', () => {
+      console.log("Opponent disconnected");
+      setStartGame(false);
+    })
   
     return () => {
       socket.off('game-state');
