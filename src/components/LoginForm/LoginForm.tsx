@@ -41,6 +41,34 @@ export default function LoginForm({ login }: Props) {
         }
     };
 
+    async function handleSubmitSignUp(event: React.FormEvent<HTMLFormElement>) {
+        event.preventDefault();
+        setError(null);
+
+        try {
+            const response = await fetch('/api/register', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(formData),
+            });
+
+            const data = await response.json();
+
+            if (!data.success) {
+                setError("Username already exists");
+                return;
+            }
+
+            login(data.username);
+
+        } catch (err) {
+            setError("Network error. Please try again.");
+            console.error('Register error:', err);
+        }
+    }
+
     const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const { name, value } = e.target;
         setFormData(prev => ({
@@ -53,7 +81,7 @@ export default function LoginForm({ login }: Props) {
 
     return (
         <div className='sign-in-container'>
-            <form className="form" onSubmit={handleSubmit}>
+            <form className="form" onSubmit={isSignUp ? handleSubmitSignUp : handleSubmit}>
                 <div className="flex-column">
                     <label>Username</label>
                 </div>
@@ -93,7 +121,12 @@ export default function LoginForm({ login }: Props) {
                     {isSignUp ? "Sign Up" : "Sign In"}
                 </button>
                 <p className="p">Don't have an account? 
-                    <span className="span" onClick={() => setIsSignUp(true)}>Sign Up</span>
+                    <span className="span" 
+                          onClick={() => {
+                            setIsSignUp(true)
+                            setError(null);
+                          }
+                    }>Sign Up</span>
                 </p>
                 <span className="pline" onClick={() => login("Guest")}>Play as guest</span>
             </form>

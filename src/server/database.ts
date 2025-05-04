@@ -37,10 +37,15 @@ export async function getUser(username: string, password: string) {
 }
 
 export async function createUser(username: string, password: string) {
-    const [result] = await pool.query(`
+    await pool.query(`
         INSERT INTO users (username, user_password)
         VALUES (?, ?)
     `, [username, password]);
 
-    return result;
+    const [users]: any = await pool.query(
+        "SELECT * FROM users WHERE username = ? AND user_password = ?",
+        [username, password]
+    );
+
+    return users[0];
 }

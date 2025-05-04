@@ -72,10 +72,11 @@ app.post("/api/register", async (req: any, res: any) => {
             });
         }
 
-        await createUser(username, password);
+        const user = await createUser(username, password);
         
         res.status(201).json({ 
-            success: true
+            success: true,
+            username: user.username
         });
 
     } catch (error) {
