@@ -46,6 +46,10 @@
   transition: 0.2s ease-in-out;
 }
 
+.inputForm.error {
+  border: 2px solid #ff4444;
+}
+
 .input {
   margin-left: 10px;
   border-radius: 10px;
@@ -130,4 +134,10 @@
   color: #2d79f3;
   font-weight: 500;
   cursor: pointer;
+}
+
+.error-message {
+  color: #ff4444;
+  margin: 10px 0;
+  font-size: 14px;
 }

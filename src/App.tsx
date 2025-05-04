@@ -99,9 +99,9 @@ function App() {
     setPlayComputerFlag(false);
   }
 
-  function login(): void {
+  function login(username: string): void {
     setIsLoggedIn(true);
-    setUsername("Jens");
+    setUsername(username);
   }
 
   return (

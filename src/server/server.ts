@@ -1,9 +1,89 @@
 import { Server } from "socket.io";
 import { Chess } from "chess.js";
+import express from 'express';
+import dotenv from 'dotenv';
+import path from 'path';
+import { createServer } from 'http';
+import { getUser, createUser } from './database';
 
-const io = new Server({
+dotenv.config({ path: path.resolve(process.cwd(), '.env') });
+
+const app = express();
+const httpServer = createServer(app);
+const io = new Server(httpServer, {
     cors: {
-        origin: "http://localhost:5173"
+      origin: "http://localhost:5173"
+    }
+  });
+
+app.use(express.json());
+
+app.post("/api/login", async (req: any, res: any) => {
+    const { username, password } = req.body;
+
+    if (!username || !password) {
+        return res.status(400).json({ 
+            success: false,
+            error: "Username and password are required" 
+        });
+    }
+
+    try {
+        const user = await getUser(username, password);
+
+        if (!user) {
+            return res.status(401).json({ 
+                success: false,
+                error: "Invalid username or password"
+            });
+        }
+
+        res.json({ 
+            success: true,
+            username: user.username
+        });
+
+    } catch (error) {
+        console.error("Login error:", error);
+        res.status(500).json({ 
+            success: false,
+            error: "Internal server error" 
+        });
+    }
+});
+
+app.post("/api/register", async (req: any, res: any) => {
+    const { username, password } = req.body;
+    
+    if (!username || !password) {
+        return res.status(400).json({ 
+            success: false,
+            error: "Username and password are required" 
+        });
+    }
+
+    try {
+        const existingUser = await getUser(username, password);
+        
+        if (existingUser) {
+            return res.status(409).json({ 
+                success: false,
+                error: "Username already exists" 
+            });
+        }
+
+        await createUser(username, password);
+        
+        res.status(201).json({ 
+            success: true
+        });
+
+    } catch (error) {
+        console.error("Registration error:", error);
+        res.status(500).json({ 
+            success: false,
+            error: "Internal server error" 
+        });
     }
 });
 
@@ -122,4 +202,7 @@ io.on('connection', (socket) => {
     });
 });
 
-io.listen(4000);
+const PORT = process.env.PORT || 3000;
+httpServer.listen(PORT, () => {
+    console.log(`Server running on port ${PORT}`);
+});
