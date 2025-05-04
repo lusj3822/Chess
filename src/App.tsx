@@ -7,8 +7,12 @@ import { GameContext, GameState, PlayerData, Time } from './interfaces';
 
 import { socket } from './socket';
 import Navbar from './components/Navbar/Navbar';
+import LoginForm from './components/LoginForm/LoginForm';
 
 function App() {
+  const [isLoggedIn, setIsLoggedIn] = useState<boolean>(false);
+  const [username, setUsername] = useState<string>("Guest");
+
   const [gameState, setGameState] = useState<GameState>({
       checkmate: false,
       stalemate: false,
@@ -76,7 +80,7 @@ function App() {
   
   const playerData: PlayerData = {
     image: "player-icons/player.jpg",
-    userName: gameContext.playComputer ? 'You' : playerColor == 'white' ? 'You are playing as white' : '',
+    userName: gameContext.playComputer ? username : playerColor == 'white' ? 'You are playing as white' : '',
     color: playerColor,
     turnStatus: gameContext.gameState.currentTurn === 'w' ? "Your turn" : "",
     time: playerTime,
@@ -95,8 +99,14 @@ function App() {
     setPlayComputerFlag(false);
   }
 
+  function login(): void {
+    setIsLoggedIn(true);
+    setUsername("Jens");
+  }
+
   return (
     <div>
+      {!isLoggedIn && <LoginForm login={login}/>}
       <Navbar playComputer={playComputer} playMultiplayer={playMultiplayer}/>
       {playComputerFlag || startGame ? (
         <>
